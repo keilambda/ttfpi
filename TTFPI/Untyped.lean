@@ -12,26 +12,20 @@ deriving Repr, BEq, Ord
 namespace Λ
 
 -- 1.3.5: Multiset of subterms
-def Sub (t : Λ) : List Λ :=
+@[simp] def Sub (t : Λ) : List Λ :=
   match t with
   | var _ => [t]
   | app M N => t :: (Sub M ++ Sub N)
   | abs _ M => t :: Sub M
 
-def Subterm (L M : Λ) : Prop := L ∈ Sub M
-
--- instance : LawfulBEq Λ where
---   eq_of_beq beq := rfl
---   rfl := _
--- instance (L : Λ) (M : Λ) : Decidable (Subterm L M) :=
---   List.instDecidableMemListInstMembershipList L (Sub M)
+@[simp] def Subterm (L M : Λ) : Prop := L ∈ Sub M
 
 -- 1.3.6
-theorem Reflexivity (M : Λ) : Subterm M M := by
-  sorry
-  -- simp [Subterm, Sub]
+theorem reflexivity (M : Λ) : Subterm M M := by
+  cases M <;> simp
 
-theorem Transitivity (L M N : Λ) : Subterm L M ∧ Subterm M N → Subterm L N := sorry
+theorem Transitivity (L M N : Λ) : Subterm L M ∧ Subterm M N → Subterm L N := by
+  sorry
 
 -- 1.3.8: Proper subterm
 def ProperSubterm (L M : Λ) : Prop := Subterm L M ∧ L ≠ M
