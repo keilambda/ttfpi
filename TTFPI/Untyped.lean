@@ -1,4 +1,4 @@
-import Batteries.Data.RBMap.Basic
+import TTFPI.Basic
 
 -- 1.3.2: The set Λ of all λ-terms
 @[reducible] def Name := String
@@ -31,10 +31,10 @@ theorem Transitivity (L M N : Λ) : Subterm L M ∧ Subterm M N → Subterm L N 
 def ProperSubterm (L M : Λ) : Prop := Subterm L M ∧ L ≠ M
 
 -- 1.4.1: The set of free variables of a λ-term
-def FreeVariables : Λ → Batteries.RBSet Λ compare
-| t@(var _) => Batteries.RBSet.single t
+def FreeVariables : Λ → RBSet Λ
+| t@(var _) => .single t
 | app M N => FreeVariables M ∪ FreeVariables N
-| abs x M => FreeVariables M \ Batteries.RBSet.single (var x)
+| abs x M => FreeVariables M \ .single (var x)
 
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
 def Closed (M : Λ) : Prop := FreeVariables M = ∅
