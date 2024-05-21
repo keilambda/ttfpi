@@ -24,8 +24,19 @@ namespace Λ
 theorem reflexivity (M : Λ) : Subterm M M := by
   cases M <;> simp
 
-theorem Transitivity (L M N : Λ) : Subterm L M ∧ Subterm M N → Subterm L N := by
-  sorry
+theorem transitivity (L M N : Λ) : Subterm L M ∧ Subterm M N → Subterm L N := by
+  simp
+  intros hlm hmn
+  induction N with
+  | var _ =>
+    simp at *
+    rw [hmn] at hlm
+    simp at *
+    exact hlm
+  | app M N ihlm ihln =>
+    sorry
+  | abs x M =>
+    sorry
 
 -- 1.3.8: Proper subterm
 def ProperSubterm (L M : Λ) : Prop := Subterm L M ∧ L ≠ M
@@ -58,5 +69,12 @@ def ex : Λ := abs "x" (app (var "x") (var "y"))
 #eval FreeVariables $ app (var "x") (abs "x" (app (var "x") (var "y")))
 -- #eval Closed $ abs "x" (var "x")
 #eval rename "x" "a" ex |> rename "x" "b"
+
+example (P Q R : Prop) : (P → Q) ∧ (Q → R) → (P → R) := by
+  simp
+  intros hPQ hQR hP
+  apply hQR
+  apply hPQ
+  assumption
 
 end Λ
