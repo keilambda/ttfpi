@@ -12,24 +12,28 @@ deriving Repr, BEq, Ord
 namespace Λ
 
 -- 1.3.5: Multiset of subterms
-def Sub (t : Λ) : List Λ :=
+@[simp] def Sub (t : Λ) : List Λ :=
   match t with
   | var _ => [t]
   | app M N => t :: (Sub M ++ Sub N)
   | abs _ M => t :: Sub M
 
--- 1.3.6
-theorem reflexivity (M : Λ) : M ∈ Sub M := by
-  cases M <;> simp [Sub]
+@[simp] def Subterm (L M : Λ) : Prop := L ∈ Sub M
 
-theorem transitivity (L M N : Λ) : L ∈ Sub M ∧ M ∈ Sub N → L ∈ Sub N := by
+@[simp] instance : HasSubset Λ := ⟨Subterm⟩
+
+-- 1.3.6
+theorem reflexivity (M : Λ) : M ⊆ M := by
+  cases M <;> simp
+
+theorem transitivity (L M N : Λ) : L ⊆ M ∧ M ⊆ N → L ⊆ N := by
   simp
   intros hlm hmn
   induction N with
   | var _ =>
-    simp [Sub] at *
+    simp at *
     rw [hmn] at hlm
-    simp [Sub] at *
+    simp at *
     exact hlm
   | app M N ihlm ihln =>
     sorry
@@ -37,7 +41,9 @@ theorem transitivity (L M N : Λ) : L ∈ Sub M ∧ M ∈ Sub N → L ∈ Sub N 
     sorry
 
 -- 1.3.8: Proper subterm
-def ProperSubterm (L M : Λ) : Prop := L ∈ Sub M ∧ L ≠ M
+@[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
+
+@[simp] instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
 -- 1.4.1: The set of free variables of a λ-term
 def FV : Λ → RBSet Λ
@@ -61,8 +67,8 @@ def Renaming (M : Λ) (x y : Name) (N : Λ) : Prop := rename x y M = N
 def ex : Λ := abs "x" (app (var "x") (var "y"))
 
 #eval Sub ex
--- #eval (var "x") ∈ Sub ex
--- #eval ProperSubterm (var "x") ex
+-- #eval (var "x") ⊆ ex
+-- #eval (var "x") ⊂ ex
 #eval FV ex
 #eval FV $ app (var "x") (abs "x" (app (var "x") (var "y")))
 -- #eval Closed $ abs "x" (var "x")
