@@ -1,4 +1,5 @@
 import TTFPI.Basic
+import LeanCopilot
 
 -- 1.3.2: The set Λ of all λ-terms
 abbrev Name := String
@@ -28,28 +29,16 @@ theorem reflexivity (M : Λ) : M ⊆ M := by
 
 theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := by
   induction N with
-  | var _ =>
-    simp at *
-    rw [hmn] at hlm
-    simp at hlm
-    exact hlm
+  | var _ => simp_all
   | app M N ihlm ihln =>
-    simp at hmn
+    simp_all
+    rename_i M'
     cases hmn with
-    | inl hmn =>
-      subst hmn
-      simp at *
-      exact hlm
-    | inr hmn =>
-      sorry
+    | inl hmn => simp_all
+    | inr hmn => cases hmn <;> simp_all
   | abs x M ih =>
-    simp at *
-    cases hmn with
-    | inl hmn =>
-      subst hmn
-      simp at *
-      exact hlm
-    | inr hmn => exact Or.inr (ih hmn)
+    simp_all
+    cases hmn <;> simp_all
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
