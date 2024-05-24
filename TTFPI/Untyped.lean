@@ -26,19 +26,30 @@ namespace Λ
 theorem reflexivity (M : Λ) : M ⊆ M := by
   cases M <;> simp
 
-theorem transitivity (L M N : Λ) : L ⊆ M ∧ M ⊆ N → L ⊆ N := by
-  simp
-  intros hlm hmn
+theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := by
   induction N with
   | var _ =>
     simp at *
     rw [hmn] at hlm
-    simp at *
+    simp at hlm
     exact hlm
   | app M N ihlm ihln =>
-    sorry
-  | abs x M =>
-    sorry
+    simp at hmn
+    cases hmn with
+    | inl hmn =>
+      subst hmn
+      simp at *
+      exact hlm
+    | inr hmn =>
+      sorry
+  | abs x M ih =>
+    simp at *
+    cases hmn with
+    | inl hmn =>
+      subst hmn
+      simp at *
+      exact hlm
+    | inr hmn => exact Or.inr (ih hmn)
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
