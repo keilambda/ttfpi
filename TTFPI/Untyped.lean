@@ -1,5 +1,4 @@
 import TTFPI.Basic
-import Aesop
 
 -- 1.3.2: The set Λ of all λ-terms
 abbrev Name := String
@@ -35,7 +34,7 @@ theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := b
     rename_i M'
     cases hmn
     · simp_all
-    · aesop
+    · sorry
   | abs x M ih =>
     simp_all
     cases hmn <;> simp_all
@@ -62,7 +61,7 @@ def rename (x y : Name) : Λ → Λ
 
 def Renaming (M : Λ) (x y : Name) (N : Λ) : Prop := rename x y M = N
 
------
+/- playground -/
 
 def ex : Λ := abs "x" (app (var "x") (var "y"))
 
@@ -74,11 +73,6 @@ def ex : Λ := abs "x" (app (var "x") (var "y"))
 -- #eval Closed $ abs "x" (var "x")
 #eval rename "x" "a" ex |> rename "x" "b"
 
-example (P Q R : Prop) : (P → Q) ∧ (Q → R) → (P → R) := by
-  simp
-  intros hPQ hQR hP
-  apply hQR
-  apply hPQ
-  assumption
+/- playground -/
 
 end Λ
