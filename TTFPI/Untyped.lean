@@ -11,6 +11,19 @@ deriving Repr, BEq, Ord
 
 namespace Λ
 
+def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
+  match t with
+  | var y => if x = y then N else t
+  | app L M => app (L.subst x N) (M.subst x N)
+  | abs y M => if x = y then t else abs y (M.subst x N)
+
+def reduceβ (t : Λ) : Λ :=
+  match t with
+  | app (abs x M) N => M.subst x N
+  | app M N => app M.reduceβ N.reduceβ
+  | abs y N => abs y N.reduceβ
+  | var _ => t
+
 -- 1.3.5: Multiset of subterms
 @[simp] def Sub (t : Λ) : List Λ :=
   match t with
@@ -63,7 +76,13 @@ def Renaming (M : Λ) (x y : Name) (N : Λ) : Prop := rename x y M = N
 
 /- playground -/
 
+def id' : Λ := abs "x" (var "x")
+
 def ex : Λ := abs "x" (app (var "x") (var "y"))
+
+#eval ex.subst "y" id'
+
+#eval (app id' (var "x")).reduceβ
 
 #eval Sub ex
 -- #eval (var "x") ⊆ ex
