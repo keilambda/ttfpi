@@ -11,6 +11,13 @@ deriving Repr, BEq, Ord
 
 namespace Λ
 
+protected def toString : Λ → String
+| var name => name
+| app M N => s!"({Λ.toString M} {Λ.toString N})"
+| abs x M => s!"(λ{x}. {Λ.toString M})"
+
+instance : ToString Λ := ⟨Λ.toString⟩
+
 def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
   match t with
   | var y => if x = y then N else t
@@ -81,20 +88,19 @@ def Renaming (M : Λ) (x y : Name) (N : Λ) : Prop := rename x y M = N
 /- playground -/
 
 def id' : Λ := abs "x" (var "x")
-
 def ex : Λ := abs "x" (app (var "x") (var "y"))
 
-#eval ex.subst "y" id'
-#eval ex["y" := id']
-#eval (app id' (var "x")).reduceβ
+#eval ex.subst "y" id' |> toString
+#eval ex["y" := id'] |> toString
+#eval (app id' (var "x")).reduceβ |> toString
 
-#eval Sub ex
+#eval Sub ex |> toString
 -- #eval (var "x") ⊆ ex
 -- #eval (var "x") ⊂ ex
 #eval FV ex
 #eval FV $ app (var "x") (abs "x" (app (var "x") (var "y")))
 -- #eval Closed $ abs "x" (var "x")
-#eval rename "x" "a" ex |> rename "x" "b"
+#eval rename "x" "a" ex |> rename "x" "b" |> toString
 
 /- playground -/
 
