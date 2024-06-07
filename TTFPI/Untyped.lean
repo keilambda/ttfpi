@@ -17,9 +17,13 @@ def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
   | app L M => app (L.subst x N) (M.subst x N)
   | abs y M => if x = y then t else abs y (M.subst x N)
 
+syntax term "[" term ":=" term "]" : term
+macro_rules
+| `($M[$x := $N]) => `(subst $M $x $N)
+
 def reduceβ (t : Λ) : Λ :=
   match t with
-  | app (abs x M) N => M.subst x N
+  | app (abs x M) N => M[x := N]
   | app M N => app M.reduceβ N.reduceβ
   | abs y N => abs y N.reduceβ
   | var _ => t
@@ -81,7 +85,7 @@ def id' : Λ := abs "x" (var "x")
 def ex : Λ := abs "x" (app (var "x") (var "y"))
 
 #eval ex.subst "y" id'
-
+#eval ex["y" := id']
 #eval (app id' (var "x")).reduceβ
 
 #eval Sub ex
