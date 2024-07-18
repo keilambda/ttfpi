@@ -1,5 +1,7 @@
 import TTFPI.Basic
 
+import Aesop
+
 -- 1.3.2: The set Λ of all λ-terms
 abbrev Name := String
 
@@ -58,7 +60,7 @@ theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := b
     rename_i M'
     cases hmn
     · simp_all
-    · sorry
+    · aesop
   | abs x M ih =>
     simp_all
     cases hmn <;> simp_all
