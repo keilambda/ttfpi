@@ -94,6 +94,7 @@ def isBound (x : Name) : Λ → Bool
 inductive Renaming : Λ → Λ → Prop where
 | rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ isBound y M → Renaming (abs x M) (abs y (rename M x y))
 
+-- 1.5.2: α-conversion or α-equivalence; =α
 inductive AlphaEq : Λ → Λ → Prop where
 | rename {M N : Λ} : Renaming M N → AlphaEq M N
 | compatAppA {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
@@ -102,6 +103,9 @@ inductive AlphaEq : Λ → Λ → Prop where
 | refl (M : Λ) : AlphaEq M M
 | symm {M N : Λ} : AlphaEq M N → AlphaEq N M
 | trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
+
+infix:50 " =α " => AlphaEq
+macro_rules | `($x =α $y) => `(AlphaEq $x $y)
 
 /- playground -/
 
