@@ -78,29 +78,37 @@ def FV : Λ → RBSet Λ
 def Closed (M : Λ) : Prop := FV M = ∅
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
-def rename (x y : Name) : Λ → Λ
-| t@(var z) => if z == x then var y else t
-| app M N => app (rename x y M) (rename x y N)
-| abs z M => abs (if z == x then y else z) (if z == x then M else rename x y M)
-
-def Renaming (M : Λ) (x y : Name) (N : Λ) : Prop := rename x y M = N
+def rename (t : Λ) (x y : Name) : Λ :=
+  match t with
+  | var x' => if x' = x then var y else t
+  | app M N => app (M.rename x y) (N.rename x y)
+  | abs x' M => if x' ≠ x then abs y (M.rename x y) else t
 
 /- playground -/
 
-def id' : Λ := abs "x" (var "x")
+def I : Λ := abs "x" (var "x")
 def ex : Λ := abs "x" (app (var "x") (var "y"))
 
-#eval ex.subst "y" id' |> toString
-#eval ex["y" := id'] |> toString
-#eval (app id' (var "x")).reduceβ |> toString
+#eval ex.subst "y" I |> toString
+#eval ex["y" := I] |> toString
+#eval (app I (var "x")).reduceβ |> toString
 
 #eval Sub ex |> toString
 -- #eval (var "x") ⊆ ex
 -- #eval (var "x") ⊂ ex
 #eval FV ex
+-- #eval (var "y") ∈ (FV ex)
 #eval FV $ app (var "x") (abs "x" (app (var "x") (var "y")))
 -- #eval Closed $ abs "x" (var "x")
-#eval rename "x" "a" ex |> rename "x" "b" |> toString
+#eval ex.rename "x" "a" |>.rename "x" "b" |> toString
+
+def M := (Λ.app (.abs "x" (.var "y")) (.var "z"))
+
+#eval M.toString
+
+#eval Λ.subst M "x" (.var "y") |> toString
+#eval Λ.subst M "z" (.var "y") |> toString
+#eval Λ.reduceβ M
 
 /- playground -/
 
