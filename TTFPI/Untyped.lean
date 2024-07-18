@@ -71,10 +71,10 @@ theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := b
 @[simp] instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
 -- 1.4.1: The set of free variables of a λ-term
-def FV : Λ → RBSet Λ
-| t@(var _) => .single t
+def FV : Λ → RBSet Name
+| var x => .single x
 | app M N => FV M ∪ FV N
-| abs x M => FV M \ .single (var x)
+| abs x M => FV M \ .single x
 
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
 def Closed (M : Λ) : Prop := FV M = ∅
@@ -86,10 +86,19 @@ def rename (t : Λ) (x y : Name) : Λ :=
   | app M N => app (M.rename x y) (N.rename x y)
   | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
 
+def isBound (x : Name) : Λ → Bool
+| var _ => false
+| app M N => isBound x M || isBound x N
+| abs y M => x == y || isBound x M
+
+inductive Renaming : Λ → Λ → Prop where
+| rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ isBound y M → Renaming (abs x M) (abs y (rename M x y))
+
 inductive AlphaEq : Λ → Λ → Prop where
-| rename {x y : Name} {M N : Λ} : (.var y) ∉ FV M → N = rename M x y → AlphaEq (abs x M) (abs y N)
-| compatApp {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L) → AlphaEq (app L M) (app L N)
-| compatAbs {z : Name} {M N : Λ} : AlphaEq (abs z M) (abs z N)
+| rename {M N : Λ} : Renaming M N → AlphaEq M N
+| compatAppA {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
+| compatAppB {M N : Λ} : AlphaEq M N → AlphaEq (app L M) (app L N)
+| compatAbs {z : Name} {M N : Λ} : AlphaEq M N → AlphaEq (abs z M) (abs z N)
 | refl (M : Λ) : AlphaEq M M
 | symm {M N : Λ} : AlphaEq M N → AlphaEq N M
 | trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
