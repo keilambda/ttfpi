@@ -9,7 +9,7 @@ inductive Λ where
 | var : Name → Λ
 | app : Λ → Λ → Λ
 | abs : Name → Λ → Λ
-deriving Repr, BEq, Ord
+deriving Repr, BEq, Ord, DecidableEq
 
 namespace Λ
 
@@ -84,7 +84,7 @@ def rename (t : Λ) (x y : Name) : Λ :=
   match t with
   | var x' => if x' = x then var y else t
   | app M N => app (M.rename x y) (N.rename x y)
-  | abs x' M => if x' ≠ x then abs y (M.rename x y) else t
+  | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
 
 /- playground -/
 
