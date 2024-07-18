@@ -86,6 +86,14 @@ def rename (t : Λ) (x y : Name) : Λ :=
   | app M N => app (M.rename x y) (N.rename x y)
   | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
 
+inductive AlphaEq : Λ → Λ → Prop where
+| rename {x y : Name} {M N : Λ} : (.var y) ∉ FV M → N = rename M x y → AlphaEq (abs x M) (abs y N)
+| compatApp {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L) → AlphaEq (app L M) (app L N)
+| compatAbs {z : Name} {M N : Λ} : AlphaEq (abs z M) (abs z N)
+| refl (M : Λ) : AlphaEq M M
+| symm {M N : Λ} : AlphaEq M N → AlphaEq N M
+| trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
+
 /- playground -/
 
 def I : Λ := abs "x" (var "x")
