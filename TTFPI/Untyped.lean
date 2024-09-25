@@ -20,23 +20,6 @@ protected def toString : Λ → String
 
 instance : ToString Λ := ⟨Λ.toString⟩
 
-def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
-  match t with
-  | var y => if x = y then N else t
-  | app L M => app (L.subst x N) (M.subst x N)
-  | abs y M => if x = y then t else abs y (M.subst x N)
-
-syntax term "[" term ":=" term "]" : term
-macro_rules
-| `($M[$x := $N]) => `(subst $M $x $N)
-
-def reduceβ (t : Λ) : Λ :=
-  match t with
-  | app (abs x M) N => M[x := N]
-  | app M N => app M.reduceβ N.reduceβ
-  | abs y N => abs y N.reduceβ
-  | var _ => t
-
 -- 1.3.5: Multiset of subterms
 @[simp] def Sub (t : Λ) : List Λ :=
   match t with
@@ -106,6 +89,31 @@ inductive AlphaEq : Λ → Λ → Prop where
 
 infix:50 " =α " => AlphaEq
 macro_rules | `($x =α $y) => `(AlphaEq $x $y)
+
+-- 1.6.1: Substitution
+def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
+  match t with
+  | var y => if x = y then N else t
+  | app P Q => app (P.subst x N) (Q.subst x N)
+  | abs y P => if (FV P).contains y then t else abs y (P.subst x N)
+
+syntax term "[" term ":=" term "]" : term
+macro_rules
+| `($M[$x := $N]) => `(subst $M $x $N)
+
+example (x y : Name) (L M N : Λ) (h : x ≠ y) (hxm : x ∉ FV L)
+  : M[x := N][y := L] = M[y := L][y := N[y := L]] :=
+  sorry
+
+def reduceβ (t : Λ) : Λ :=
+  match t with
+  | app (abs x M) N => M[x := N]
+  | app M N => app M.reduceβ N.reduceβ
+  | abs y N => abs y N.reduceβ
+  | var _ => t
+
+syntax:1024 (name := betaReduction) "→β" term:1024 : term
+macro_rules | `(→β$M) => `(Λ.reduceβ $M)
 
 /- playground -/
 
