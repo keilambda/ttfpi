@@ -20,6 +20,8 @@ protected def toString : Λ → String
 
 instance : ToString Λ := ⟨Λ.toString⟩
 
+instance : Coe Name Λ := ⟨Λ.var⟩
+
 -- 1.3.5: Multiset of subterms
 @[simp] def Sub (t : Λ) : List Λ :=
   match t with
