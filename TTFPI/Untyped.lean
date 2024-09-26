@@ -22,8 +22,12 @@ instance : ToString Λ := ⟨Λ.toString⟩
 
 instance : Coe Name Λ := ⟨Λ.var⟩
 
-syntax "lam" term "↦" term : term
-macro_rules | `(lam $x ↦ $M) => `(Λ.abs $x $M)
+syntax "lam" term,+ "↦" term : term
+macro_rules
+| `(lam $x ↦ $M) => `(Λ.abs $x $M)
+| `(lam $x, $xs:term,* ↦ $M) => do
+  let N ← `(lam $xs,* ↦ $M)
+  `(Λ.abs $x $N)
 
 infixl:100 " :$ " => Λ.app
 
