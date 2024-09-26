@@ -122,32 +122,4 @@ def reduceβ (t : Λ) : Λ :=
 syntax:1024 (name := betaReduction) "→β" term:1024 : term
 macro_rules | `(→β$M) => `(Λ.reduceβ $M)
 
-/- playground -/
-
-def I : Λ := abs "x" (var "x")
-def ex : Λ := abs "x" (app (var "x") (var "y"))
-
-#eval ex.subst "y" I |> toString
-#eval ex["y" := I] |> toString
-#eval (app I (var "x")).reduceβ |> toString
-
-#eval Sub ex |> toString
--- #eval (var "x") ⊆ ex
--- #eval (var "x") ⊂ ex
-#eval FV ex
--- #eval (var "y") ∈ (FV ex)
-#eval FV $ app (var "x") (abs "x" (app (var "x") (var "y")))
--- #eval Closed $ abs "x" (var "x")
-#eval ex.rename "x" "a" |>.rename "x" "b" |> toString
-
-def M := (Λ.app (.abs "x" (.var "y")) (.var "z"))
-
-#eval M.toString
-
-#eval Λ.subst M "x" (.var "y") |> toString
-#eval Λ.subst M "z" (.var "y") |> toString
-#eval Λ.reduceβ M
-
-/- playground -/
-
 end Λ
