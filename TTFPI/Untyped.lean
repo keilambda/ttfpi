@@ -25,7 +25,7 @@ instance : Coe Name Λ := ⟨Λ.var⟩
 syntax "lam" term "↦" term : term
 macro_rules | `(lam $x ↦ $M) => `(Λ.abs $x $M)
 
-infix:50 " $ " => Λ.app
+infixl:100 " :$ " => Λ.app
 
 -- 1.3.5: Multiset of subterms
 @[simp] def Sub (t : Λ) : List Λ :=
