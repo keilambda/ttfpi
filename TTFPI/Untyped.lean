@@ -1,6 +1,8 @@
 import TTFPI.Basic
 
 import Aesop
+import Mathlib.Order.Defs
+import Mathlib.Order.RelClasses
 
 -- 1.3.2: The set Λ of all λ-terms
 abbrev Name := String
@@ -43,21 +45,22 @@ infixl:100 " :$ " => Λ.app
 @[simp] instance : HasSubset Λ := ⟨Subterm⟩
 
 -- 1.3.6
-theorem reflexivity (M : Λ) : M ⊆ M := by
-  cases M <;> simp
+@[simp] instance : IsRefl Λ Subterm where
+  refl M := by
+    induction M with
+    | var _ => rw [Subterm, Sub, List.mem_singleton]
+    | app P Q => rw [Subterm, Sub]; exact List.mem_cons_self ..
+    | abs _ Q => rw [Subterm, Sub]; exact List.mem_cons_self ..
 
-theorem transitivity (L M N : Λ) (hlm : L ⊆ M) (hmn : M ⊆ N) : L ⊆ N := by
-  induction N with
-  | var _ => simp_all
-  | app M N ihlm ihln =>
-    simp_all
-    rename_i M'
-    cases hmn
-    · simp_all
-    · aesop
-  | abs x M ih =>
-    simp_all
-    cases hmn <;> simp_all
+@[simp] instance : IsRefl Λ Subset where
+  refl M := by
+    induction M with
+    | var _ => rw [Subset, instHasSubset]; exact IsRefl.refl ..
+    | app P Q => rw [Subset, instHasSubset]; exact IsRefl.refl ..
+    | abs _ Q => rw [Subset, instHasSubset]; exact IsRefl.refl ..
+
+@[simp] instance : IsTrans Λ Subset where
+  trans L M N hlm hmn := by induction N <;> aesop
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
