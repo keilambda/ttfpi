@@ -45,22 +45,51 @@ infixl:100 " :$ " => Λ.app
 @[simp] instance : HasSubset Λ := ⟨Subterm⟩
 
 -- 1.3.6
-@[simp] instance : IsRefl Λ Subterm where
+@[simp] instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
   refl M := by
     induction M with
-    | var _ => rw [Subterm, Sub, List.mem_singleton]
-    | app P Q => rw [Subterm, Sub]; exact List.mem_cons_self ..
-    | abs _ Q => rw [Subterm, Sub]; exact List.mem_cons_self ..
+    | var _ => rw [Sub, List.mem_singleton]
+    | app P Q => rw [Sub]; exact List.mem_cons_self ..
+    | abs _ Q => rw [Sub]; exact List.mem_cons_self ..
 
-@[simp] instance : IsRefl Λ Subset where
-  refl M := by
-    induction M with
-    | var _ => rw [Subset, instHasSubset]; exact IsRefl.refl ..
-    | app P Q => rw [Subset, instHasSubset]; exact IsRefl.refl ..
-    | abs _ Q => rw [Subset, instHasSubset]; exact IsRefl.refl ..
+@[simp] instance instIsReflSubterm : IsRefl Λ Subterm where
+  refl M := by induction M <;> (rw [Subterm]; exact instIsReflInSub.refl ..)
+
+@[simp] instance instIsReflSubset : IsRefl Λ Subset where
+  refl M := by induction M <;> (rw [Subset, instHasSubset]; exact IsRefl.refl ..)
 
 @[simp] instance : IsTrans Λ Subset where
   trans L M N hlm hmn := by induction N <;> aesop
+
+instance : LawfulBEq Λ where
+  eq_of_beq foo := sorry
+  rfl := sorry
+
+instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
+  List.instDecidableMemOfLawfulBEq M (Sub N)
+
+instance instDecidableSubterm {M N : Λ} : Decidable (Subterm M N) :=
+  match M, N with
+  | var x, var y =>
+    if h : x = y
+      then isTrue (by rw [h]; exact IsRefl.refl ..)
+      else isFalse (by simp; exact h)
+  | var x, app P Q =>
+    if h : var x ∈ Sub P ∨ var x ∈ Sub Q
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; rw [not_or] at h; exact h)
+  | var x, abs y Q =>
+    if h : var x ∈ Sub Q
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; exact h)
+  | app P Q, R =>
+    if h : app P Q ∈ Sub R
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; exact h)
+  | abs x Q, R =>
+    if h : abs x Q ∈ Sub R
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; exact h)
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
