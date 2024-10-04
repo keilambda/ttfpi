@@ -62,8 +62,40 @@ infixl:100 " :$ " => Λ.app
   trans L M N hlm hmn := by induction N <;> aesop
 
 instance : LawfulBEq Λ where
-  eq_of_beq foo := sorry
-  rfl := sorry
+  eq_of_beq := by
+    intro M N
+    cases M with
+    | var x =>
+      cases N with
+      | var x' =>
+        intro h
+        have := of_decide_eq_true h
+        exact congrArg var this
+      | app _ _ => intro h; contradiction
+      | abs _ _ => intro h; contradiction
+
+    | app P Q =>
+      cases N with
+      | app P' Q' =>
+        intro h
+        _
+      | var _ => intro h; contradiction
+      | abs _ _ => intro h; contradiction
+
+    | abs x Q =>
+      cases N with
+      | abs x' Q' =>
+        intro h
+        _
+      | var _ => intro h; contradiction
+      | app _ _ => intro h; contradiction
+
+  rfl := by
+    intro M
+    cases M with
+    | var x => exact (beq_iff_eq ..).mpr rfl
+    | app P Q => exact (beq_iff_eq ..).mpr rfl
+    | abs x Q => exact (beq_iff_eq ..).mpr rfl
 
 instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
   List.instDecidableMemOfLawfulBEq M (Sub N)
