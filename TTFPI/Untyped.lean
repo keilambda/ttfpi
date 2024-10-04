@@ -15,6 +15,9 @@ deriving Repr, Ord, DecidableEq
 
 namespace Λ
 
+variable {L M N P Q R : Λ}
+variable {x y z u v w : Name}
+
 protected def toString : Λ → String
 | var name => name
 | app M N => s!"({Λ.toString M} {Λ.toString N})"
@@ -27,7 +30,7 @@ instance : Coe Name Λ := ⟨Λ.var⟩
 syntax "lam" term,+ "↦" term : term
 macro_rules
 | `(lam $x ↦ $M) => `(Λ.abs $x $M)
-| `(lam $x, $xs:term,* ↦ $M) => do
+| `(lam $x, $xs,* ↦ $M) => do
   let N ← `(lam $xs,* ↦ $M)
   `(Λ.abs $x $N)
 
@@ -68,14 +71,11 @@ instance instIsReflSubset : IsRefl Λ Subset where
 instance : IsTrans Λ Subset where
   trans L M N hlm hmn := by induction N <;> aesop
 
-instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
-  List.instDecidableMemOfLawfulBEq M (Sub N)
+instance : Decidable (M ∈ Sub N) := List.instDecidableMemOfLawfulBEq M (Sub N)
 
-instance instDecidableSubterm {M N : Λ} : Decidable (Subterm M N) :=
-  inferInstanceAs (Decidable (M ∈ Sub N))
+instance : Decidable (Subterm M N) := inferInstanceAs (Decidable (M ∈ Sub N))
 
-instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
-  inferInstanceAs (Decidable (M ∈ Sub N))
+instance : Decidable (Subset M N) := inferInstanceAs (Decidable (M ∈ Sub N))
 
 -- 1.3.8: Proper subterm
 @[simp]
@@ -84,11 +84,9 @@ def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
 @[simp]
 instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
-instance instDecidableProperSubterm {M N : Λ} : Decidable (ProperSubterm M N) :=
-  inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
+instance : Decidable (ProperSubterm M N) := inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
-instance instDecidableSSubset {M N : Λ} : Decidable (M ⊂ N) :=
-  inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
+instance : Decidable (M ⊂ N) := inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 -- 1.4.1: The set of free variables of a λ-term
 def FV : Λ → RBSet Name
@@ -99,8 +97,7 @@ def FV : Λ → RBSet Name
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
 def Closed (M : Λ) : Prop := M.FV.isEmpty
 
-instance instDecidableClosed {M : Λ} : Decidable (Closed M) :=
-  inferInstanceAs (Decidable M.FV.isEmpty)
+instance : Decidable (Closed M) := inferInstanceAs (Decidable M.FV.isEmpty)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
@@ -117,17 +114,17 @@ def isBound (x : Name) : Λ → Bool
 | abs y M => x == y || isBound x M
 
 inductive Renaming : Λ → Λ → Prop where
-| rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ isBound y M → Renaming (abs x M) (abs y (rename M x y))
+| rename : y ∉ (FV M) → ¬ isBound y M → Renaming (abs x M) (abs y (rename M x y))
 
 -- 1.5.2: α-conversion or α-equivalence; =α
 inductive AlphaEq : Λ → Λ → Prop where
-| rename {M N : Λ} : Renaming M N → AlphaEq M N
-| compatAppA {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
-| compatAppB {M N : Λ} : AlphaEq M N → AlphaEq (app L M) (app L N)
-| compatAbs {z : Name} {M N : Λ} : AlphaEq M N → AlphaEq (abs z M) (abs z N)
+| rename : Renaming M N → AlphaEq M N
+| compatAppA : AlphaEq M N → AlphaEq (app M L) (app N L)
+| compatAppB : AlphaEq M N → AlphaEq (app L M) (app L N)
+| compatAbs : AlphaEq M N → AlphaEq (abs z M) (abs z N)
 | refl (M : Λ) : AlphaEq M M
-| symm {M N : Λ} : AlphaEq M N → AlphaEq N M
-| trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
+| symm : AlphaEq M N → AlphaEq N M
+| trans : AlphaEq L M → AlphaEq M N → AlphaEq L N
 
 infix:50 " =α " => AlphaEq
 macro_rules | `($x =α $y) => `(AlphaEq $x $y)
