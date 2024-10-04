@@ -34,31 +34,38 @@ macro_rules
 infixl:100 " :$ " => Λ.app
 
 -- 1.3.5: Multiset of subterms
-@[simp] def Sub (t : Λ) : List Λ :=
+@[simp]
+def Sub (t : Λ) : List Λ :=
   match t with
   | var _ => [t]
   | app M N => t :: (Sub M ++ Sub N)
   | abs _ M => t :: Sub M
 
-@[simp] def Subterm (L M : Λ) : Prop := L ∈ Sub M
+@[simp]
+def Subterm (L M : Λ) : Prop := L ∈ Sub M
 
-@[simp] instance : HasSubset Λ := ⟨Subterm⟩
+@[simp]
+instance : HasSubset Λ := ⟨Subterm⟩
 
 -- 1.3.6
-@[simp] instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
+@[simp]
+instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
   refl M := by
     induction M with
     | var _ => rw [Sub, List.mem_singleton]
     | app P Q => rw [Sub]; exact List.mem_cons_self ..
     | abs _ Q => rw [Sub]; exact List.mem_cons_self ..
 
-@[simp] instance instIsReflSubterm : IsRefl Λ Subterm where
+@[simp]
+instance instIsReflSubterm : IsRefl Λ Subterm where
   refl M := by induction M <;> (rw [Subterm]; exact instIsReflInSub.refl ..)
 
-@[simp] instance instIsReflSubset : IsRefl Λ Subset where
+@[simp]
+instance instIsReflSubset : IsRefl Λ Subset where
   refl M := by induction M <;> (rw [Subset, instHasSubset]; exact IsRefl.refl ..)
 
-@[simp] instance : IsTrans Λ Subset where
+@[simp]
+instance : IsTrans Λ Subset where
   trans L M N hlm hmn := by induction N <;> aesop
 
 instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
@@ -71,9 +78,11 @@ instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
   inferInstanceAs (Decidable (M ∈ Sub N))
 
 -- 1.3.8: Proper subterm
-@[simp] def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
+@[simp]
+def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
 
-@[simp] instance : HasSSubset Λ := ⟨ProperSubterm⟩
+@[simp]
+instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
 instance instDecidableProperSubterm {M N : Λ} : Decidable (ProperSubterm M N) :=
   inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
@@ -94,12 +103,14 @@ instance instDecidableClosed {M : Λ} : Decidable (Closed M) :=
   inferInstanceAs (Decidable M.FV.isEmpty)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
+@[simp]
 def rename (t : Λ) (x y : Name) : Λ :=
   match t with
   | var x' => if x' = x then var y else t
   | app M N => app (M.rename x y) (N.rename x y)
   | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
 
+@[simp]
 def isBound (x : Name) : Λ → Bool
 | var _ => false
 | app M N => isBound x M || isBound x N
