@@ -76,19 +76,7 @@ instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
 @[simp] instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
 instance instDecidableProperSubterm {M N : Λ} : Decidable (ProperSubterm M N) :=
-  match M with
-  | var x =>
-    if h : var x ≠ N ∧ var x ⊆ N
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; simp at h; exact h)
-  | app P Q =>
-    if h : app P Q ≠ N ∧ app P Q ⊆ N
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; simp at h; exact h)
-  | abs x Q =>
-    if h : abs x Q ≠ N ∧ abs x Q ⊆ N
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; simp at h; exact h)
+  inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 instance instDecidableSSubset {M N : Λ} : Decidable (M ⊂ N) :=
   instDecidableProperSubterm
@@ -103,7 +91,7 @@ def FV : Λ → RBSet Name
 def Closed (M : Λ) : Prop := M.FV.isEmpty
 
 instance instDecidableClosed {M : Λ} : Decidable (Closed M) :=
-  if h : M.FV.isEmpty then isTrue (by exact h) else isFalse (by exact h)
+  inferInstanceAs (Decidable M.FV.isEmpty)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 def rename (t : Λ) (x y : Name) : Λ :=
