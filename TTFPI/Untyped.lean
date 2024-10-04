@@ -11,7 +11,7 @@ inductive Λ where
 | var : Name → Λ
 | app : Λ → Λ → Λ
 | abs : Name → Λ → Λ
-deriving Repr, BEq, Ord, DecidableEq
+deriving Repr, Ord, DecidableEq
 
 namespace Λ
 
@@ -61,67 +61,11 @@ infixl:100 " :$ " => Λ.app
 @[simp] instance : IsTrans Λ Subset where
   trans L M N hlm hmn := by induction N <;> aesop
 
-instance : LawfulBEq Λ where
-  eq_of_beq := by
-    intro M N
-    cases M with
-    | var x =>
-      cases N with
-      | var x' =>
-        intro h
-        have := of_decide_eq_true h
-        exact congrArg var this
-      | app _ _ => intro h; contradiction
-      | abs _ _ => intro h; contradiction
-
-    | app P Q =>
-      cases N with
-      | app P' Q' =>
-        intro h
-        _
-      | var _ => intro h; contradiction
-      | abs _ _ => intro h; contradiction
-
-    | abs x Q =>
-      cases N with
-      | abs x' Q' =>
-        intro h
-        _
-      | var _ => intro h; contradiction
-      | app _ _ => intro h; contradiction
-
-  rfl := by
-    intro M
-    cases M with
-    | var x => exact (beq_iff_eq ..).mpr rfl
-    | app P Q => exact (beq_iff_eq ..).mpr rfl
-    | abs x Q => exact (beq_iff_eq ..).mpr rfl
-
 instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
   List.instDecidableMemOfLawfulBEq M (Sub N)
 
 instance instDecidableSubterm {M N : Λ} : Decidable (Subterm M N) :=
-  match M, N with
-  | var x, var y =>
-    if h : x = y
-      then isTrue (by rw [h]; exact IsRefl.refl ..)
-      else isFalse (by simp; exact h)
-  | var x, app P Q =>
-    if h : var x ∈ Sub P ∨ var x ∈ Sub Q
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; rw [not_or] at h; exact h)
-  | var x, abs y Q =>
-    if h : var x ∈ Sub Q
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; exact h)
-  | app P Q, R =>
-    if h : app P Q ∈ Sub R
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; exact h)
-  | abs x Q, R =>
-    if h : abs x Q ∈ Sub R
-      then isTrue (by simp; exact h)
-      else isFalse (by simp; exact h)
+  instDecidableInSub
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
