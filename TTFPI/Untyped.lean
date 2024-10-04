@@ -67,6 +67,9 @@ instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
 instance instDecidableSubterm {M N : Λ} : Decidable (Subterm M N) :=
   instDecidableInSub
 
+instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
+  instDecidableInSub
+
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
 
