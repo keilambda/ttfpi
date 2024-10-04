@@ -1,6 +1,7 @@
 import TTFPI.Untyped
 
 import Aesop
+import Batteries.Data.RBMap.Lemmas
 
 open Λ
 
@@ -30,12 +31,12 @@ def ex : Λ := lam "x" ↦ ("x" :$ "y")
 #eval →β(I :$ "x")
 
 #eval Sub ex |> toString
--- #eval (var "x") ⊆ ex
--- #eval (var "x") ⊂ ex
+#eval (var "x") ⊆ ex
+#eval (var "x") ⊂ ex
 #eval FV ex
--- #eval "y" ∈ (FV ex)
+#eval "y" ∈ (FV ex)
 #eval FV $ "x" :$ (lam "x" ↦ "x" :$ "y")
--- #eval Closed I
+#eval Closed I
 #eval ex.rename "x" "a" |>.rename "x" "b" |> toString
 
 def M := (lam "x" ↦ "y") :$ "z"
@@ -44,5 +45,3 @@ def M := (lam "x" ↦ "y") :$ "z"
 #eval Λ.subst M "x" "y" |> toString
 #eval Λ.subst M "z" "y" |> toString
 #eval Λ.reduceβ M
-
-/- playground -/
