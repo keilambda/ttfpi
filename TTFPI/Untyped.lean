@@ -100,7 +100,10 @@ def FV : Λ → RBSet Name
 | abs x M => FV M \ .single x
 
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
-def Closed (M : Λ) : Prop := FV M = ∅
+def Closed (M : Λ) : Prop := M.FV.isEmpty
+
+instance instDecidableClosed {M : Λ} : Decidable (Closed M) :=
+  if h : M.FV.isEmpty then isTrue (by exact h) else isFalse (by exact h)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 def rename (t : Λ) (x y : Name) : Λ :=
