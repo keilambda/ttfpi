@@ -65,10 +65,10 @@ instance instDecidableInSub {M N : Λ} : Decidable (M ∈ Sub N) :=
   List.instDecidableMemOfLawfulBEq M (Sub N)
 
 instance instDecidableSubterm {M N : Λ} : Decidable (Subterm M N) :=
-  instDecidableInSub
+  inferInstanceAs (Decidable (M ∈ Sub N))
 
 instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
-  instDecidableInSub
+  inferInstanceAs (Decidable (M ∈ Sub N))
 
 -- 1.3.8: Proper subterm
 @[simp] def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
@@ -79,7 +79,7 @@ instance instDecidableProperSubterm {M N : Λ} : Decidable (ProperSubterm M N) :
   inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 instance instDecidableSSubset {M N : Λ} : Decidable (M ⊂ N) :=
-  instDecidableProperSubterm
+  inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 -- 1.4.1: The set of free variables of a λ-term
 def FV : Λ → RBSet Name
