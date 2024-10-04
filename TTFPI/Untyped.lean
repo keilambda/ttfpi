@@ -71,9 +71,27 @@ instance instDecidableSubset {M N : Λ} : Decidable (Subset M N) :=
   instDecidableInSub
 
 -- 1.3.8: Proper subterm
-@[simp] def ProperSubterm (L M : Λ) : Prop := L ⊆ M ∧ L ≠ M
+@[simp] def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
 
 @[simp] instance : HasSSubset Λ := ⟨ProperSubterm⟩
+
+instance instDecidableProperSubterm {M N : Λ} : Decidable (ProperSubterm M N) :=
+  match M with
+  | var x =>
+    if h : var x ≠ N ∧ var x ⊆ N
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; simp at h; exact h)
+  | app P Q =>
+    if h : app P Q ≠ N ∧ app P Q ⊆ N
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; simp at h; exact h)
+  | abs x Q =>
+    if h : abs x Q ≠ N ∧ abs x Q ⊆ N
+      then isTrue (by simp; exact h)
+      else isFalse (by simp; simp at h; exact h)
+
+instance instDecidableSSubset {M N : Λ} : Decidable (M ⊂ N) :=
+  instDecidableProperSubterm
 
 -- 1.4.1: The set of free variables of a λ-term
 def FV : Λ → RBSet Name
