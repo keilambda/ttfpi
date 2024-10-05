@@ -103,7 +103,7 @@ def rename (t : Λ) (x y : Name) : Λ :=
   match t with
   | var x' => if x' = x then var y else t
   | app M N => app (M.rename x y) (N.rename x y)
-  | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
+  | abs x' M => if x = x' then t else abs x' (M.rename x y)
 
 @[simp]
 def hasBindingVar (t : Λ) (x : Name) : Prop :=
