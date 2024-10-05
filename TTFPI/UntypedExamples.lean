@@ -12,8 +12,8 @@ open Batteries in
 theorem IdentityRenaming : Renaming I I2 := by
   have foo : ¬ ("y" ∈ FV "x") := by
     simp [FV, Membership.mem, RBSet.Mem, RBSet.MemP, RBNode.MemP, RBNode.Any, compare, compareOfLessAndEq]
-  have bar : ¬ (isBound "y" "x") := by
-    simp [isBound]
+  have bar : ¬ (hasBindingVar "y" "x") := by
+    simp [hasBindingVar]
   exact (.rename foo bar)
 
 def x2y := lam "x" ↦ "y"
