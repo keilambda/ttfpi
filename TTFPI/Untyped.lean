@@ -60,12 +60,10 @@ instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
     | abs _ Q => rw [Sub]; exact List.mem_cons_self ..
 
 @[simp]
-instance instIsReflSubterm : IsRefl Λ Subterm where
-  refl M := by induction M <;> (rw [Subterm]; exact instIsReflInSub.refl ..)
+instance instIsReflSubterm : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
 @[simp]
-instance instIsReflSubset : IsRefl Λ Subset where
-  refl M := by induction M <;> (rw [Subset, instHasSubset]; exact IsRefl.refl ..)
+instance instIsReflSubset : IsRefl Λ Subset := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
 @[simp]
 instance : IsTrans Λ Subset where
