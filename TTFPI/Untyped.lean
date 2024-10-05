@@ -108,23 +108,42 @@ def rename (t : Λ) (x y : Name) : Λ :=
   | abs x' M => if x' ≠ x then abs x' (M.rename x y) else t
 
 @[simp]
-def isBound (x : Name) : Λ → Bool
-| var _ => false
-| app M N => isBound x M || isBound x N
-| abs y M => x == y || isBound x M
+def hasBindingVar (t : Λ) (x : Name) : Prop :=
+  match t with
+  | var _ => False
+  | app M N => M.hasBindingVar x ∨ N.hasBindingVar x
+  | abs y N => x = y ∨ N.hasBindingVar x
+
+protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingVar x) :=
+  match M with
+  | var _ => isFalse (by rw [hasBindingVar, not_false_eq_true]; trivial)
+  | app P Q =>
+    match Λ.hasDecHasBindingVar P x, Λ.hasDecHasBindingVar Q x with
+    | isTrue hP, _ => isTrue (by exact Or.inl hP)
+    | _, isTrue hQ => isTrue (by exact Or.inr hQ)
+    | isFalse hP, isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨hP, hQ⟩)
+  | abs y Q =>
+    if h : x = y
+      then isTrue (by rw [hasBindingVar]; exact Or.inl h)
+      else
+        match Λ.hasDecHasBindingVar Q x with
+        | isTrue hQ => isTrue (by exact Or.inr hQ)
+        | isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨h, hQ⟩)
+
+instance : Decidable (M.hasBindingVar x) := Λ.hasDecHasBindingVar M x
 
 inductive Renaming : Λ → Λ → Prop where
-| rename : y ∉ (FV M) → ¬ isBound y M → Renaming (abs x M) (abs y (rename M x y))
+| rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ M.hasBindingVar y → Renaming (abs x M) (abs y (rename M x y))
 
 -- 1.5.2: α-conversion or α-equivalence; =α
 inductive AlphaEq : Λ → Λ → Prop where
-| rename : Renaming M N → AlphaEq M N
-| compatAppA : AlphaEq M N → AlphaEq (app M L) (app N L)
-| compatAppB : AlphaEq M N → AlphaEq (app L M) (app L N)
-| compatAbs : AlphaEq M N → AlphaEq (abs z M) (abs z N)
+| rename {M N : Λ} : Renaming M N → AlphaEq M N
+| compatAppA {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
+| compatAppB {M N : Λ} : AlphaEq M N → AlphaEq (app L M) (app L N)
+| compatAbs {z : Name} {M N : Λ} : AlphaEq M N → AlphaEq (abs z M) (abs z N)
 | refl (M : Λ) : AlphaEq M M
-| symm : AlphaEq M N → AlphaEq N M
-| trans : AlphaEq L M → AlphaEq M N → AlphaEq L N
+| symm {M N : Λ} : AlphaEq M N → AlphaEq N M
+| trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
 
 infix:50 " =α " => AlphaEq
 macro_rules | `($x =α $y) => `(AlphaEq $x $y)
