@@ -66,8 +66,39 @@ instance instIsReflSubterm : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (·
 instance instIsReflSubset : IsRefl Λ Subset := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
 @[simp]
-instance : IsTrans Λ Subset where
-  trans L M N hlm hmn := by induction N <;> aesop
+instance : IsTrans Λ (· ∈ Sub ·) where
+  trans L M N hlm hmn := by
+    induction N with
+    | var _ =>
+      rw [Sub, List.mem_singleton]
+      rw [Sub, List.mem_singleton] at hmn
+      rw [hmn] at hlm
+      rw [Sub, List.mem_singleton] at hlm
+      assumption
+    | app P Q hP hQ =>
+      rw [Sub, List.mem_cons, List.mem_append]
+      rw [Sub, List.mem_cons, List.mem_append] at hmn
+      cases hmn with
+      | inl h =>
+        subst h
+        rw [Sub, List.mem_cons, List.mem_append] at hlm
+        assumption
+      | inr h => cases h with
+        | inl hl => exact Or.inr (Or.inl (hP hl))
+        | inr hr => exact Or.inr (Or.inr (hQ hr))
+    | abs _ Q hQ =>
+      rw [Sub, List.mem_cons]
+      rw [Sub, List.mem_cons] at hmn
+      cases hmn with
+      | inl h =>
+        subst h
+        rw [Sub, List.mem_cons] at hlm
+        assumption
+      | inr h => exact Or.inr (hQ h)
+
+instance : IsTrans Λ Subterm := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
+
+instance : IsTrans Λ Subset := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
 
 instance : Decidable (M ∈ Sub N) := List.instDecidableMemOfLawfulBEq M (Sub N)
 
