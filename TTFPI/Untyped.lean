@@ -134,17 +134,44 @@ inductive Renaming : Λ → Λ → Prop where
 | rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ M.hasBindingVar y → Renaming (abs x M) (abs y (rename M x y))
 
 -- 1.5.2: α-conversion or α-equivalence; =α
+@[aesop safe [constructors]]
 inductive AlphaEq : Λ → Λ → Prop where
 | rename {M N : Λ} : Renaming M N → AlphaEq M N
-| compatAppA {M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
-| compatAppB {M N : Λ} : AlphaEq M N → AlphaEq (app L M) (app L N)
+| compatAppLeft {L M N : Λ} : AlphaEq M N → AlphaEq (app M L) (app N L)
+| compatAppRight {L M N : Λ} : AlphaEq M N → AlphaEq (app L M) (app L N)
 | compatAbs {z : Name} {M N : Λ} : AlphaEq M N → AlphaEq (abs z M) (abs z N)
 | refl (M : Λ) : AlphaEq M M
 | symm {M N : Λ} : AlphaEq M N → AlphaEq N M
 | trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
 
 infix:50 " =α " => AlphaEq
-macro_rules | `($x =α $y) => `(AlphaEq $x $y)
+macro_rules | `($x =α $y) => `(binrel% AlphaEq $x $y)
+
+@[simp]
+theorem alpha_eq_compat_app_left (h : M =α N) : app M L =α app N L := AlphaEq.compatAppLeft h
+
+@[simp]
+theorem alpha_eq_compat_app_right (h : M =α N) : app L M =α app L N := AlphaEq.compatAppRight h
+
+@[simp]
+theorem alpha_eq_compat_abs (h : M =α N) : abs z M =α abs z N := AlphaEq.compatAbs h
+
+@[simp]
+theorem alpha_eq_refl (M : Λ) : M =α M := AlphaEq.refl M
+
+@[simp]
+theorem alpha_eq_symm (h : M =α N) : N =α M := AlphaEq.symm h
+
+@[simp]
+theorem alpha_eq_trans (hlm : L =α M) (hmn : M =α N) : L =α N := AlphaEq.trans hlm hmn
+
+instance : IsRefl Λ (· =α ·) := ⟨AlphaEq.refl⟩
+
+instance : IsSymm Λ (· =α ·) := ⟨@AlphaEq.symm⟩
+
+instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
+
+instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans⟩
 
 -- 1.6.1: Substitution
 def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
