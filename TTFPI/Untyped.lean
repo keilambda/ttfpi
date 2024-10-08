@@ -43,6 +43,8 @@ def size : Λ → Nat
 | app M N => 1 + M.size + N.size
 | abs _ N => 1 + N.size
 
+instance : SizeOf Λ := ⟨Λ.size⟩
+
 -- 1.3.5: Multiset of subterms
 @[simp]
 def Sub (t : Λ) : List Λ :=
