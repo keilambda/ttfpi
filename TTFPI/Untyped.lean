@@ -250,9 +250,27 @@ macro_rules
 | `($M[$x := $N]) => `(subst' $M $x $N)
 | `($M[$x := $N, $n]) => `(subst $M $x $N |>.run' $n)
 
-example (x y : Name) (L M N : Λ) (h : x ≠ y) (hxm : x ∉ FV L)
-  : M[x := N][y := L] = M[y := L][y := N[y := L]] :=
-  sorry
+-- 1.6.5
+lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
+  induction M with
+  | var z =>
+    simp [subst, subst', StateT.run]
+    by_cases hxz : x = z
+    · simp [hxz]
+      by_cases hyz : y = z
+      · subst hxz hyz; aesop
+      · simp [pure, StateT.pure, hyz, subst]
+    · simp [pure, StateT.pure]
+      by_cases hyz : y = z
+      · simp [hxz, hyz, subst, pure, StateT.pure]
+        sorry
+      · simp [hxz, hyz, subst]
+  | app P Q hP hQ =>
+    simp [subst, subst', StateT.run]
+    sorry
+  | abs z Q hQ =>
+    simp [subst, subst', StateT.run]
+    sorry
 
 def reduceβ (t : Λ) : Λ :=
   match t with
