@@ -262,4 +262,22 @@ def reduceβ (t : Λ) : Λ :=
 syntax:1024 (name := betaReduction) "→β" term:1024 : term
 macro_rules | `(→β$M) => `(Λ.reduceβ $M)
 
+namespace Combinators
+
+def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
+def Δ := lam "x" ↦ "x" :$ "x" :$ "x"
+def Y := lam "f" ↦ (lam "x" ↦ "f" :$ ("x" :$ "x")) :$ (lam "x" ↦ "f" :$ ("x" :$ "x"))
+
+-- SKI
+def S := lam "x", "y", "z" ↦ ("x" :$ "z") :$ ("y" :$ "z")
+def K := lam "x", "y" ↦ "x"
+def I := lam "x" ↦ "x"
+
+-- BCKW
+def B := lam "x", "y", "z" ↦ "x" :$ ("y" :$ "z")
+def C := lam "x", "y", "z" ↦ "x" :$ "z" :$ "y"
+def W := lam "x", "y" ↦ "x" :$ "y" :$ "y"
+
+end Combinators
+
 end Λ
