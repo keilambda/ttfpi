@@ -1,6 +1,7 @@
 import TTFPI.Basic
 
 import Aesop
+import Batteries.Data.RBMap.Lemmas
 import Mathlib.Order.Defs
 import Mathlib.Order.RelClasses
 
@@ -35,6 +36,12 @@ macro_rules
   `(Λ.abs $x $N)
 
 infixl:100 " :$ " => Λ.app
+
+@[simp]
+def size : Λ → Nat
+| var _ => 1
+| app M N => 1 + M.size + N.size
+| abs _ N => 1 + N.size
 
 -- 1.3.5: Multiset of subterms
 @[simp]
@@ -137,6 +144,17 @@ def rename (t : Λ) (x y : Name) : Λ :=
   | abs x' M => if x = x' then t else abs x' (M.rename x y)
 
 @[simp]
+theorem rename_size_eq : (M.rename x y).size = M.size := by
+  induction M with
+  | var _ => rw [rename, size]; split <;> rw [size]
+  | app P Q hP hQ => rw [rename, size, hP, hQ, size]
+  | abs _ Q hQ =>
+    rw [rename, size]
+    split
+    · rw [size]
+    · rw [size, hQ]
+
+@[simp]
 def hasBindingVar (t : Λ) (x : Name) : Prop :=
   match t with
   | var _ => False
@@ -205,15 +223,30 @@ instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
 instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans⟩
 
 -- 1.6.1: Substitution
-def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
+def subst (t : Λ) (x : Name) (N : Λ) : StateM Nat Λ :=
   match t with
-  | var y => if x = y then N else t
-  | app P Q => app (P.subst x N) (Q.subst x N)
-  | abs y P => if (FV P).contains y then t else abs y (P.subst x N)
+  | var y => pure $ if x = y then N else t
+  | app P Q => app <$> P.subst x N <*> Q.subst x N
+  | abs y P =>
+    if y = x then
+      pure t
+    else if y ∈ N.FV then do
+      let y' ← gensym
+      let P' := P.rename y y'
+      abs y' <$> (P'.subst x N)
+    else
+      abs y <$> (P.subst x N)
+termination_by t.size
+decreasing_by all_goals simp_wf <;> simp_arith
+where
+  gensym : StateM Nat Name := getModify Nat.succ <&> toString
 
-syntax term "[" term ":=" term "]" : term
+def subst' (t : Λ) (x : Name) (N : Λ) : Λ := t.subst x N |>.run' 0
+
+syntax term "[" term ":=" term ("," term)? "]" : term
 macro_rules
-| `($M[$x := $N]) => `(subst $M $x $N)
+| `($M[$x := $N]) => `(subst' $M $x $N)
+| `($M[$x := $N, $n]) => `(subst $M $x $N |>.run' $n)
 
 example (x y : Name) (L M N : Λ) (h : x ≠ y) (hxm : x ∉ FV L)
   : M[x := N][y := L] = M[y := L][y := N[y := L]] :=
