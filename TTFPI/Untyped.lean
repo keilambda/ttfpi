@@ -205,13 +205,13 @@ theorem alpha_eq_compat_app_right (h : M =α N) : app L M =α app L N := AlphaEq
 @[simp]
 theorem alpha_eq_compat_abs (h : M =α N) : abs z M =α abs z N := AlphaEq.compatAbs h
 
-@[simp]
+@[refl]
 theorem alpha_eq_refl (M : Λ) : M =α M := AlphaEq.refl M
 
-@[simp]
+@[symm]
 theorem alpha_eq_symm (h : M =α N) : N =α M := AlphaEq.symm h
 
-@[simp]
+@[trans]
 theorem alpha_eq_trans (hlm : L =α M) (hmn : M =α N) : L =α N := AlphaEq.trans hlm hmn
 
 instance : IsRefl Λ (· =α ·) := ⟨AlphaEq.refl⟩
