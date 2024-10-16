@@ -225,23 +225,28 @@ instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
 instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans⟩
 
 -- 1.6.1: Substitution
+def gensym : StateM Nat Name := getModify Nat.succ <&> toString
+
+def gensymNotIn (fv : RBSet Name) : StateM Nat Name := do
+  let mut y ← gensym
+  while y ∈ fv do
+    y ← gensym
+  return y
+
 def subst (t : Λ) (x : Name) (N : Λ) : StateM Nat Λ :=
   match t with
   | var y => pure $ if x = y then N else t
   | app P Q => app <$> P.subst x N <*> Q.subst x N
   | abs y P =>
-    if y = x then
+    if x = y then
       pure t
     else if y ∈ N.FV then do
-      let y' ← gensym
-      let P' := P.rename y y'
-      abs y' <$> (P'.subst x N)
+      let z ← gensymNotIn N.FV
+      abs z <$> ((P.rename y z).subst x N)
     else
       abs y <$> (P.subst x N)
 termination_by t.size
 decreasing_by all_goals simp_wf <;> simp_arith
-where
-  gensym : StateM Nat Name := getModify Nat.succ <&> toString
 
 def subst' (t : Λ) (x : Name) (N : Λ) : Λ := t.subst x N |>.run' 0
 
