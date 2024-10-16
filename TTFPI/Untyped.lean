@@ -7,6 +7,14 @@ import Mathlib.Data.Multiset.Sort
 import Mathlib.Order.Defs
 import Mathlib.Order.RelClasses
 
+/-!
+# Untyped λ-calculus
+
+Note that we are not using `simp` or `aesop` in this file, even though our code is written in a
+style that is compatible with these tactics. This is because we want to keep the proofs as explicit
+as possible, for educational purposes.
+-/
+
 -- 1.3.2: The set Λ of all λ-terms
 abbrev Name := String
 
