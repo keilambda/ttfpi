@@ -23,7 +23,6 @@ def ex : Λ := lam "x" ↦ ("x" :$ "y")
 #eval ex.subst' "y" I |> toString
 #eval ex["y" := I] |> toString
 #eval (I :$ "x").reduceβ |> toString
-#eval →β(I :$ "x")
 
 #eval Sub ex |> toString
 #eval (var "x") ⊆ ex

@@ -277,6 +277,7 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     simp [subst, subst', StateT.run]
     sorry
 
+-- 1.8.1: One-step β-reduction; →β
 def reduceβ (t : Λ) : Λ :=
   match t with
   | app (abs x M) N => M[x := N]
@@ -284,8 +285,14 @@ def reduceβ (t : Λ) : Λ :=
   | abs y N => abs y N.reduceβ
   | var _ => t
 
-syntax:1024 (name := betaReduction) "→β" term:1024 : term
-macro_rules | `(→β$M) => `(Λ.reduceβ $M)
+inductive Beta : Λ → Λ → Prop where
+| redex {x : Name} {M N : Λ} : Beta (app (abs x M) N) (M[x := N])
+| compatAppLeft {L M N : Λ} : Beta M N → Beta (app M L) (app N L)
+| compatAppRight {L M N : Λ} : Beta M N → Beta (app L M) (app L N)
+| compatAbs {x : Name} {M N : Λ} : Beta M N → Beta (abs x M) (abs x N)
+
+infixl:50 " →β " => Beta
+macro_rules | `($M →β $N) => `(binrel% Beta $M $N)
 
 namespace Combinators
 
