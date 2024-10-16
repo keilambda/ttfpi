@@ -2,6 +2,8 @@ import TTFPI.Basic
 
 import Aesop
 import Batteries.Data.RBMap.Lemmas
+import Mathlib.Data.Multiset.Basic
+import Mathlib.Data.Multiset.Sort
 import Mathlib.Order.Defs
 import Mathlib.Order.RelClasses
 
@@ -47,11 +49,11 @@ instance : SizeOf Λ := ⟨Λ.size⟩
 
 -- 1.3.5: Multiset of subterms
 @[simp]
-def Sub (t : Λ) : List Λ :=
+def Sub (t : Λ) : Multiset Λ :=
   match t with
-  | var _ => [t]
-  | app M N => t :: (Sub M ++ Sub N)
-  | abs _ M => t :: Sub M
+  | var _ => {t}
+  | app M N => t ::ₘ (Sub M + Sub N)
+  | abs _ M => t ::ₘ Sub M
 
 @[simp]
 def Subterm (L M : Λ) : Prop := L ∈ Sub M
@@ -64,9 +66,9 @@ instance : HasSubset Λ := ⟨Subterm⟩
 instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
   refl M := by
     induction M with
-    | var _ => rw [Sub, List.mem_singleton]
-    | app P Q => rw [Sub]; exact List.mem_cons_self ..
-    | abs _ Q => rw [Sub]; exact List.mem_cons_self ..
+    | var _ => rw [Sub, Multiset.mem_singleton]
+    | app P Q => rw [Sub]; exact Multiset.mem_cons_self ..
+    | abs _ Q => rw [Sub]; exact Multiset.mem_cons_self ..
 
 @[simp]
 instance instIsReflSubterm : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
@@ -79,37 +81,35 @@ instance : IsTrans Λ (· ∈ Sub ·) where
   trans L M N hlm hmn := by
     induction N with
     | var _ =>
-      rw [Sub, List.mem_singleton]
-      rw [Sub, List.mem_singleton] at hmn
+      rw [Sub, Multiset.mem_singleton]
+      rw [Sub, Multiset.mem_singleton] at hmn
       rw [hmn] at hlm
-      rw [Sub, List.mem_singleton] at hlm
+      rw [Sub, Multiset.mem_singleton] at hlm
       assumption
     | app P Q hP hQ =>
-      rw [Sub, List.mem_cons, List.mem_append]
-      rw [Sub, List.mem_cons, List.mem_append] at hmn
+      rw [Sub, Multiset.mem_cons, Multiset.mem_add]
+      rw [Sub, Multiset.mem_cons, Multiset.mem_add] at hmn
       cases hmn with
       | inl h =>
         subst h
-        rw [Sub, List.mem_cons, List.mem_append] at hlm
+        rw [Sub, Multiset.mem_cons, Multiset.mem_add] at hlm
         assumption
       | inr h => cases h with
         | inl hl => exact Or.inr (Or.inl (hP hl))
         | inr hr => exact Or.inr (Or.inr (hQ hr))
     | abs _ Q hQ =>
-      rw [Sub, List.mem_cons]
-      rw [Sub, List.mem_cons] at hmn
+      rw [Sub, Multiset.mem_cons]
+      rw [Sub, Multiset.mem_cons] at hmn
       cases hmn with
       | inl h =>
         subst h
-        rw [Sub, List.mem_cons] at hlm
+        rw [Sub, Multiset.mem_cons] at hlm
         assumption
       | inr h => exact Or.inr (hQ h)
 
 instance : IsTrans Λ Subterm := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
 
 instance : IsTrans Λ Subset := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
-
-instance : Decidable (M ∈ Sub N) := List.instDecidableMemOfLawfulBEq M (Sub N)
 
 instance : Decidable (Subterm M N) := inferInstanceAs (Decidable (M ∈ Sub N))
 
