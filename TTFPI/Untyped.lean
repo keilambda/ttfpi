@@ -307,6 +307,23 @@ inductive BetaStar : Λ → Λ → Prop where
 | zero {M : Λ} : BetaStar M M
 | step {L M N : Λ} : Beta L M → BetaStar M N → BetaStar L N
 
+-- 1.8.4: extension of →β, reflexivity and transitivity
+theorem BetaStar.extension : Beta M N → BetaStar M N := by
+  intro h
+  exact step h zero
+
+instance : Coe (Beta M N) (BetaStar M N) := ⟨BetaStar.extension⟩
+
+@[refl]
+theorem BetaStar.refl : BetaStar M M := zero
+
+@[trans]
+theorem BetaStar.trans : BetaStar L M → BetaStar M N → BetaStar L N := by
+  intro hlm hmn
+  induction hlm with
+  | zero => exact hmn
+  | step hlm' _ IH => exact step hlm' (IH hmn)
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
