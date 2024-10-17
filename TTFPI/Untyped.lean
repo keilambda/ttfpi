@@ -302,6 +302,11 @@ inductive Beta : Λ → Λ → Prop where
 infixl:50 " →β " => Beta
 macro_rules | `($M →β $N) => `(binrel% Beta $M $N)
 
+-- 1.8.3: β-reduction (zero-or-more-step); ↠β
+inductive BetaStar : Λ → Λ → Prop where
+| zero {M : Λ} : BetaStar M M
+| step {L M N : Λ} : Beta L M → BetaStar M N → BetaStar L N
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
