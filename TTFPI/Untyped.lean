@@ -414,6 +414,24 @@ theorem beta_nf_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
   | zero => rfl
   | step hlm hmn IH => sorry
 
+-- 1.9.5: Reduction path
+inductive FiniteReductionPath : Λ → Λ → Prop where
+| zero {M : Λ} : FiniteReductionPath M M
+| step {L M N : Λ} : Beta L M → FiniteReductionPath M N → FiniteReductionPath L N
+
+@[refl]
+theorem FiniteReductionPath.refl : FiniteReductionPath M M := FiniteReductionPath.zero
+
+@[trans]
+theorem FiniteReductionPath.trans : FiniteReductionPath L M → FiniteReductionPath M N → FiniteReductionPath L N := by
+  intro hlm hmn
+  induction hlm with
+  | zero => exact hmn
+  | step hlm' _ IH => exact step hlm' (IH hmn)
+
+instance : IsRefl Λ FiniteReductionPath := ⟨@FiniteReductionPath.zero⟩
+instance : IsTrans Λ FiniteReductionPath := ⟨@FiniteReductionPath.trans⟩
+
 -- 1.10.1: Fixpoint
 theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
   intro L
