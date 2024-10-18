@@ -408,6 +408,12 @@ instance : Decidable (M.inNormalForm) := Λ.hasDecIsNormalForm M
 
 def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
 
+-- 1.9.2: α-equivalence implication
+theorem beta_nf_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N := by
+  induction hmn with
+  | zero => rfl
+  | step hlm hmn IH => sorry
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
