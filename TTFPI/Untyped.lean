@@ -334,6 +334,19 @@ inductive BetaEq : Λ → Λ → Prop where
 infix:50 " =β " => BetaEq
 macro_rules | `($M =β $N) => `(binrel% BetaEq $M $N)
 
+-- 1.8.6: extension of ↠β, reflexivity, symmetry and transitivity
+theorem BetaEq.extension : BetaStar M N → BetaEq M N := by
+  intro h
+  induction h with
+  | zero => exact refl ..
+  | step hlm _ IH => exact trans (beta hlm) IH
+
+theorem BetaEq.extensionInv : BetaStar N M → BetaEq M N := by
+  intro h
+  induction h with
+  | zero => exact refl ..
+  | step hlm _ IH => exact trans IH (symm (beta hlm))
+
 instance : IsRefl Λ (· =β ·) := ⟨BetaEq.refl⟩
 instance : IsSymm Λ (· =β ·) := ⟨@BetaEq.symm⟩
 instance : IsTrans Λ (· =β ·) := ⟨@BetaEq.trans⟩
