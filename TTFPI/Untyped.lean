@@ -116,11 +116,9 @@ instance : IsTrans Λ (· ∈ Sub ·) where
       | inr h => exact Or.inr (hQ h)
 
 instance : IsTrans Λ Subterm := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
-
 instance : IsTrans Λ Subset := inferInstanceAs (IsTrans Λ (· ∈ Sub ·))
 
 instance : Decidable (Subterm M N) := inferInstanceAs (Decidable (M ∈ Sub N))
-
 instance : Decidable (Subset M N) := inferInstanceAs (Decidable (M ∈ Sub N))
 
 -- 1.3.8: Proper subterm
@@ -131,7 +129,6 @@ def ProperSubterm (L M : Λ) : Prop := L ≠ M ∧ L ⊆ M
 instance : HasSSubset Λ := ⟨ProperSubterm⟩
 
 instance : Decidable (ProperSubterm M N) := inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
-
 instance : Decidable (M ⊂ N) := inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 -- 1.4.1: The set of free variables of a λ-term
@@ -225,9 +222,7 @@ theorem alpha_eq_symm (h : M =α N) : N =α M := AlphaEq.symm h
 theorem alpha_eq_trans (hlm : L =α M) (hmn : M =α N) : L =α N := AlphaEq.trans hlm hmn
 
 instance : IsRefl Λ (· =α ·) := ⟨AlphaEq.refl⟩
-
 instance : IsSymm Λ (· =α ·) := ⟨@AlphaEq.symm⟩
-
 instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
 
 instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans⟩
@@ -302,6 +297,9 @@ inductive Beta : Λ → Λ → Prop where
 infixl:50 " →β " => Beta
 macro_rules | `($M →β $N) => `(binrel% Beta $M $N)
 
+infixl:50 " ←β " => fun M N => Beta N M
+macro_rules | `($M ←β $N) => `(binrel% Beta $N $M)
+
 -- 1.8.3: β-reduction (zero-or-more-step); ↠β
 inductive BetaStar : Λ → Λ → Prop where
 | zero {M : Λ} : BetaStar M M
@@ -339,6 +337,7 @@ macro_rules | `($M =β $N) => `(binrel% BetaEq $M $N)
 instance : IsRefl Λ (· =β ·) := ⟨BetaEq.refl⟩
 instance : IsSymm Λ (· =β ·) := ⟨@BetaEq.symm⟩
 instance : IsTrans Λ (· =β ·) := ⟨@BetaEq.trans⟩
+
 instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
 
 namespace Combinators
