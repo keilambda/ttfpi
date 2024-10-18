@@ -414,6 +414,14 @@ theorem beta_nf_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
   | zero => rfl
   | step hlm hmn IH => sorry
 
+-- 1.10.1: Fixpoint
+theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
+  intro L
+  have U := lam "x" ↦ L :$ ("x" :$ "x")
+  have M := U :$ U
+  have h : M →β app L M := sorry
+  exact ⟨M, symm (.beta h)⟩
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
