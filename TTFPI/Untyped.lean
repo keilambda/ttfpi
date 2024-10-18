@@ -324,6 +324,23 @@ theorem BetaStar.trans : BetaStar L M → BetaStar M N → BetaStar L N := by
   | zero => exact hmn
   | step hlm' _ IH => exact step hlm' (IH hmn)
 
+-- 1.8.5: β-conversion; β-equality; =β
+@[aesop safe [constructors]]
+inductive BetaEq : Λ → Λ → Prop where
+| beta {M N : Λ} : Beta M N → BetaEq M N
+| betaInv {M N : Λ} : Beta N M → BetaEq M N
+| refl (M : Λ) : BetaEq M M
+| symm {M N : Λ} : BetaEq M N → BetaEq N M
+| trans {L M N : Λ} : BetaEq L M → BetaEq M N → BetaEq L N
+
+infix:50 " =β " => BetaEq
+macro_rules | `($M =β $N) => `(binrel% BetaEq $M $N)
+
+instance : IsRefl Λ (· =β ·) := ⟨BetaEq.refl⟩
+instance : IsSymm Λ (· =β ·) := ⟨@BetaEq.symm⟩
+instance : IsTrans Λ (· =β ·) := ⟨@BetaEq.trans⟩
+instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
