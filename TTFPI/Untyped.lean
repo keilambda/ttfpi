@@ -308,6 +308,9 @@ inductive BetaStar : Λ → Λ → Prop where
 infixl:50 " ↠β " => BetaStar
 macro_rules | `($M ↠β $N) => `(binrel% BetaStar $M $N)
 
+infixl:50 " ↞β " => fun M N => BetaStar N M
+macro_rules | `($M ↞β $N) => `(binrel% BetaStar $N $M)
+
 -- 1.8.4: extension of →β, reflexivity and transitivity
 theorem BetaStar.extension : M →β N → M ↠β N := by
   intro h
@@ -337,18 +340,33 @@ inductive BetaEq : Λ → Λ → Prop where
 infix:50 " =β " => BetaEq
 macro_rules | `($M =β $N) => `(binrel% BetaEq $M $N)
 
+@[simp]
+theorem beta_eq_beta (h : M →β N) : M =β N := BetaEq.beta h
+
+@[simp]
+theorem beta_eq_beta_inv (h : M ←β N) : M =β N := BetaEq.betaInv h
+
+@[refl]
+theorem beta_eq_refl (M : Λ) : M =β M := BetaEq.refl M
+
+@[symm]
+theorem beta_eq_symm (h : M =β N) : N =β M := BetaEq.symm h
+
+@[trans]
+theorem beta_eq_trans (hlm : L =β M) (hmn : M =β N) : L =β N := BetaEq.trans hlm hmn
+
 -- 1.8.6: extension of ↠β, reflexivity, symmetry and transitivity
 theorem BetaEq.extension : M ↠β N → M =β N := by
   intro h
   induction h with
-  | zero => exact refl ..
+  | zero => rfl
   | step hlm _ IH => exact trans (beta hlm) IH
 
-theorem BetaEq.extensionInv : N ↠β M → M =β N := by
+theorem BetaEq.extensionInv : M ↞β N → M =β N := by
   intro h
   induction h with
-  | zero => exact refl ..
-  | step hlm _ IH => exact trans IH (symm (beta hlm))
+  | zero => rfl
+  | step hlm _ IH => exact trans IH (betaInv hlm)
 
 instance : IsRefl Λ (· =β ·) := ⟨BetaEq.refl⟩
 instance : IsSymm Λ (· =β ·) := ⟨@BetaEq.symm⟩
