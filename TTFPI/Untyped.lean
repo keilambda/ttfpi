@@ -356,6 +356,40 @@ instance : IsTrans Λ (· =β ·) := ⟨@BetaEq.trans⟩
 
 instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
 
+-- 1.9.1: β-normal form; β-nf; β-normalizing
+def isRedex : Λ → Prop
+| app (abs _ _) _ => True
+| _ => False
+
+instance : Decidable (M.isRedex) :=
+  match M with
+  | var _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
+  | app (var _) _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
+  | app (app _ _) _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
+  | app (abs _ _) _ => isTrue (by rw [isRedex]; reduce; trivial)
+  | abs _ _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
+
+def inNormalForm : Λ → Prop
+| var _ => True
+| app M N => ¬ isRedex (app M N) ∧ inNormalForm M ∧ inNormalForm N
+| abs _ M => inNormalForm M
+
+protected def hasDecIsNormalForm (M : Λ) : Decidable (M.inNormalForm) :=
+  match M with
+  | var _ => isTrue (by rw [inNormalForm]; trivial)
+  | app M N =>
+    if h : isRedex (app M N)
+      then isFalse (by rw [inNormalForm]; simp [h])
+      else match M.hasDecIsNormalForm, N.hasDecIsNormalForm with
+        | isFalse hM, _ => isFalse (by rw [inNormalForm]; simp [h, hM])
+        | _, isFalse hN => isFalse (by rw [inNormalForm]; simp [h, hN])
+        | isTrue hM, isTrue hN => isTrue (by rw [inNormalForm]; exact ⟨h, hM, hN⟩)
+  | abs _ M => M.hasDecIsNormalForm
+
+instance : Decidable (M.inNormalForm) := Λ.hasDecIsNormalForm M
+
+def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
