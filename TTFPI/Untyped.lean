@@ -301,9 +301,7 @@ infixl:50 " ←β " => fun M N => Beta N M
 macro_rules | `($M ←β $N) => `(binrel% Beta $N $M)
 
 -- 1.8.3: β-reduction (zero-or-more-step); ↠β
-inductive BetaStar : Λ → Λ → Prop where
-| zero {M : Λ} : BetaStar M M
-| step {L M N : Λ} : Beta L M → BetaStar M N → BetaStar L N
+abbrev BetaStar := Star Beta
 
 infixl:50 " ↠β " => BetaStar
 macro_rules | `($M ↠β $N) => `(binrel% BetaStar $M $N)
@@ -314,19 +312,9 @@ macro_rules | `($M ↞β $N) => `(binrel% BetaStar $N $M)
 -- 1.8.4: extension of →β, reflexivity and transitivity
 theorem BetaStar.extension : M →β N → M ↠β N := by
   intro h
-  exact step h zero
+  exact Star.step h (Star.zero N)
 
 instance : Coe (M →β N) (M ↠β N) := ⟨BetaStar.extension⟩
-
-@[refl]
-theorem BetaStar.refl : M ↠β M := zero
-
-@[trans]
-theorem BetaStar.trans : L ↠β M → M ↠β N → L ↠β N := by
-  intro hlm hmn
-  induction hlm with
-  | zero => exact hmn
-  | step hlm' _ IH => exact step hlm' (IH hmn)
 
 -- 1.8.5: β-conversion; β-equality; =β
 @[aesop safe [constructors]]
@@ -415,22 +403,10 @@ theorem beta_nf_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
   | step hlm hmn IH => sorry
 
 -- 1.9.5: Reduction path
-inductive FiniteReductionPath : Λ → Λ → Prop where
-| zero {M : Λ} : FiniteReductionPath M M
-| step {L M N : Λ} : Beta L M → FiniteReductionPath M N → FiniteReductionPath L N
+abbrev FiniteReductionPath := Star Beta
 
-@[refl]
-theorem FiniteReductionPath.refl : FiniteReductionPath M M := FiniteReductionPath.zero
-
-@[trans]
-theorem FiniteReductionPath.trans : FiniteReductionPath L M → FiniteReductionPath M N → FiniteReductionPath L N := by
-  intro hlm hmn
-  induction hlm with
-  | zero => exact hmn
-  | step hlm' _ IH => exact step hlm' (IH hmn)
-
-instance : IsRefl Λ FiniteReductionPath := ⟨@FiniteReductionPath.zero⟩
-instance : IsTrans Λ FiniteReductionPath := ⟨@FiniteReductionPath.trans⟩
+instance : IsRefl Λ FiniteReductionPath := ⟨@Star.refl _ _⟩
+instance : IsTrans Λ FiniteReductionPath := ⟨@Star.trans _ _⟩
 
 -- 1.10.1: Fixpoint
 theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
