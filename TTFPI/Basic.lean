@@ -1,6 +1,8 @@
 import Batteries.Data.RBMap.Basic
 import Mathlib.Data.Multiset.Basic
 
+universe u
+
 abbrev RBSet (α : Type u) [Ord α] := Batteries.RBSet α compare
 
 @[inherit_doc] infix:50 " ≡ " => Eq
