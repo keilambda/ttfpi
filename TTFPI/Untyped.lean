@@ -186,8 +186,13 @@ protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingV
 
 instance : Decidable (M.hasBindingVar x) := Λ.hasDecHasBindingVar M x
 
+@[aesop safe [constructors]]
 inductive Renaming : Λ → Λ → Prop where
-| rename {x y : Name} {M : Λ} : y ∉ (FV M) → ¬ M.hasBindingVar y → Renaming (abs x M) (abs y (rename M x y))
+| rename (x y : Name) (M : Λ) (hfv : y ∉ (FV M)) (hnb : ¬ M.hasBindingVar y) : Renaming (abs x M) (abs y (rename M x y))
+
+@[simp]
+theorem renaming_rename {x y : Name} {M : Λ} {hfv : y ∉ (FV M)} {hnb : ¬ M.hasBindingVar y} : Renaming (abs x M) (abs y (rename M x y)) :=
+  Renaming.rename x y M hfv hnb
 
 -- 1.5.2: α-conversion or α-equivalence; =α
 @[aesop safe [constructors]]
