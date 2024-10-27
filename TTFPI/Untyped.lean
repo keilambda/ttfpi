@@ -205,6 +205,8 @@ inductive AlphaEq : Λ → Λ → Prop where
 | symm {M N : Λ} : AlphaEq M N → AlphaEq N M
 | trans {L M N : Λ} : AlphaEq L M → AlphaEq M N → AlphaEq L N
 
+instance : Coe (Renaming M N) (AlphaEq M N) := ⟨AlphaEq.rename⟩
+
 infix:50 " =α " => AlphaEq
 macro_rules | `($x =α $y) => `(binrel% AlphaEq $x $y)
 
@@ -294,7 +296,7 @@ def reduceβ (t : Λ) : Λ :=
   | var _ => t
 
 inductive Beta : Λ → Λ → Prop where
-| redex {x : Name} {M N : Λ} : Beta (app (abs x M) N) (M[x := N])
+| redex {x : Name} (M N : Λ) : Beta (app (abs x M) N) (M[x := N])
 | compatAppLeft {L M N : Λ} : Beta M N → Beta (app M L) (app N L)
 | compatAppRight {L M N : Λ} : Beta M N → Beta (app L M) (app L N)
 | compatAbs {x : Name} {M N : Λ} : Beta M N → Beta (abs x M) (abs x N)
@@ -304,6 +306,18 @@ macro_rules | `($M →β $N) => `(binrel% Beta $M $N)
 
 infixl:50 " ←β " => fun M N => Beta N M
 macro_rules | `($M ←β $N) => `(binrel% Beta $N $M)
+
+@[simp]
+theorem beta_redex {x : Name} {M N : Λ} : Beta (app (abs x M) N) (M[x := N]) := Beta.redex M N
+
+@[simp]
+theorem beta_compat_app_left {L M N : Λ} (h : M →β N) : app M L →β app N L := Beta.compatAppLeft h
+
+@[simp]
+theorem beta_compat_app_right {L M N : Λ} (h : M →β N) : app L M →β app L N := Beta.compatAppRight h
+
+@[simp]
+theorem beta_compat_abs {x : Name} {M N : Λ} (h : M →β N) : abs x M →β abs x N := Beta.compatAbs h
 
 -- 1.8.3: β-reduction (zero-or-more-step); ↠β
 abbrev BetaStar := Star Beta
