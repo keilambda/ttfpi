@@ -434,10 +434,10 @@ def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
 -- 1.10.1: Fixpoint
 theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
   intro L
-  have U := lam "x" ↦ L :$ ("x" :$ "x")
-  have M := U :$ U
-  have h : M →β app L M := sorry
-  exact ⟨M, symm (.beta h)⟩
+  let U := lam "x" ↦ L :$ ("x" :$ "x")
+  let M := U :$ U
+  have h : M →β (L :$ M) := sorry
+  exact ⟨M, .betaInv h⟩
 
 namespace Combinators
 
