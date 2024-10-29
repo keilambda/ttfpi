@@ -427,6 +427,10 @@ abbrev FiniteReductionPath := Star Beta
 instance : IsRefl Λ FiniteReductionPath := ⟨@Star.refl _ _⟩
 instance : IsTrans Λ FiniteReductionPath := ⟨@Star.trans _ _⟩
 
+def isWeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M ↠β N
+
+def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
+
 -- 1.10.1: Fixpoint
 theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
   intro L
