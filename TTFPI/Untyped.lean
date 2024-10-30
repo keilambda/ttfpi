@@ -228,6 +228,8 @@ theorem alpha_eq_symm (h : M =α N) : N =α M := AlphaEq.symm h
 @[trans]
 theorem alpha_eq_trans (hlm : L =α M) (hmn : M =α N) : L =α N := AlphaEq.trans hlm hmn
 
+theorem eq_imp_alpha_eq (h : M = N) : M =α N := by subst h; rfl
+
 instance : IsRefl Λ (· =α ·) := ⟨AlphaEq.refl⟩
 instance : IsSymm Λ (· =α ·) := ⟨@AlphaEq.symm⟩
 instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
@@ -416,10 +418,29 @@ instance : Decidable (M.inNormalForm) := Λ.hasDecIsNormalForm M
 def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
 
 -- 1.9.2: α-equivalence implication
-theorem beta_nf_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N := by
+theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
+  induction hmn with
+  | redex M N =>
+    rw [inNormalForm, isRedex] at h
+    rw [not_true_eq_false, false_and] at h
+    contradiction
+  | @compatAppLeft L M N _ IH =>
+    rw [inNormalForm, isRedex] at h
+    exact congrFun (congrArg app (IH h.right.left)) L
+  | @compatAppRight L M N _ IH =>
+    rw [inNormalForm, isRedex] at h
+    exact congrArg (app L) (IH h.right.right)
+  | @compatAbs x M N _ IH =>
+    rw [inNormalForm] at h
+    exact congrArg (abs x) (IH h)
+
+theorem nf_beta_star_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := by
   induction hmn with
   | zero => rfl
-  | step hlm hmn IH => sorry
+  | step hlm hmn IH => cases hmn <;> (have := nf_beta_imp_eq h hlm; subst this; exact IH h)
+
+theorem nf_beta_star_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
+  eq_imp_alpha_eq (nf_beta_star_imp_eq h hmn)
 
 -- 1.9.5: Reduction path
 abbrev FiniteReductionPath := Star Beta
