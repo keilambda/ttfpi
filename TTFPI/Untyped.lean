@@ -271,7 +271,7 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     by_cases hxz : x = z
     · simp [hxz]
       by_cases hyz : y = z
-      · subst hxz hyz; aesop
+      · subst hxz hyz; contradiction
       · simp [pure, StateT.pure, hyz, subst]
     · simp [pure, StateT.pure]
       by_cases hyz : y = z
@@ -397,15 +397,15 @@ def inNormalForm : Λ → Prop
 | app M N => ¬ isRedex (app M N) ∧ inNormalForm M ∧ inNormalForm N
 | abs _ M => inNormalForm M
 
-protected def hasDecIsNormalForm (M : Λ) : Decidable (M.inNormalForm) :=
+protected def hasDecIsNormalForm (M : Λ) : Decidable M.inNormalForm :=
   match M with
   | var _ => isTrue (by rw [inNormalForm]; trivial)
   | app M N =>
     if h : isRedex (app M N)
-      then isFalse (by rw [inNormalForm]; simp [h])
+      then isFalse (by rw [inNormalForm, not_and]; intro nh; contradiction)
       else match M.hasDecIsNormalForm, N.hasDecIsNormalForm with
-        | isFalse hM, _ => isFalse (by rw [inNormalForm]; simp [h, hM])
-        | _, isFalse hN => isFalse (by rw [inNormalForm]; simp [h, hN])
+        | isFalse hM, _ => isFalse (by rw [inNormalForm, not_and, not_and]; intro _ nh; contradiction)
+        | _, isFalse hN => isFalse (by rw [inNormalForm, not_and, not_and]; intro _ _ nh; contradiction)
         | isTrue hM, isTrue hN => isTrue (by rw [inNormalForm]; exact ⟨h, hM, hN⟩)
   | abs _ M => M.hasDecIsNormalForm
 
