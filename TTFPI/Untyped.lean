@@ -70,7 +70,6 @@ def Subterm (L M : Λ) : Prop := L ∈ Sub M
 instance : HasSubset Λ := ⟨Subterm⟩
 
 -- 1.3.6
-@[simp]
 instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
   refl M := by
     induction M with
@@ -78,13 +77,10 @@ instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
     | app P Q => rw [Sub]; exact Multiset.mem_cons_self ..
     | abs _ Q => rw [Sub]; exact Multiset.mem_cons_self ..
 
-@[simp]
 instance instIsReflSubterm : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
-@[simp]
 instance instIsReflSubset : IsRefl Λ Subset := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
-@[simp]
 instance : IsTrans Λ (· ∈ Sub ·) where
   trans L M N hlm hmn := by
     induction N with
@@ -418,6 +414,7 @@ instance : Decidable (M.inNormalForm) := Λ.hasDecIsNormalForm M
 def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
 
 -- 1.9.2: α-equivalence implication
+@[simp]
 theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
   induction hmn with
   | redex M N =>
@@ -434,6 +431,7 @@ theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
     rw [inNormalForm] at h
     exact congrArg (abs x) (IH h)
 
+@[simp]
 theorem nf_beta_star_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := by
   induction hmn with
   | zero => rfl
