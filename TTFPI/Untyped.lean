@@ -263,26 +263,54 @@ macro_rules
 | `($M[$x := $N]) => `(subst' $M $x $N)
 | `($M[$x := $N, $n]) => `(subst $M $x $N |>.run' $n)
 
+syntax (name := simp_subst) "simp_subst" : tactic
+macro_rules
+| `(tactic| simp_subst) =>
+  `(tactic| simp [subst', StateT.run, subst, pure, StateT.pure, Seq.seq, StateT.bind, StateT.map, Functor.map])
+
+theorem subst_noop (h : x ∉ M.FV) : M[x := N] = M := by
+  induction M with
+  | var y =>
+    simp_subst
+    rw [FV, Finset.mem_singleton] at h
+    intro hxy
+    contradiction
+  | app P Q ihP ihQ =>
+    simp_subst
+    rw [FV, Finset.mem_union, not_or] at h
+    exact ⟨ihP h.left, sorry⟩
+  | abs y Q ihQ =>
+    simp_subst
+    rw [FV] at h
+    if hxy : x = y then
+      simp [hxy, StateT.pure]
+    else if hyn : y ∈ N.FV then
+      simp [hxy, hyn, gensymNotIn, gensym, bind, StateT.bind, StateT.pure, pure, StateT.map]
+      sorry
+    else
+      sorry
+
 -- 1.6.5
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
   induction M with
   | var z =>
-    simp [subst, subst', StateT.run]
+    simp_subst
     by_cases hxz : x = z
     · simp [hxz]
       by_cases hyz : y = z
       · subst hxz hyz; contradiction
-      · simp [pure, StateT.pure, hyz, subst]
-    · simp [pure, StateT.pure]
-      by_cases hyz : y = z
-      · simp [hxz, hyz, subst, pure, StateT.pure]
+      · simp [hyz]; simp_subst
+    · by_cases hyz : y = z
+      · simp [hxz, hyz]
+        simp_subst
+        unfold subst
         sorry
       · simp [hxz, hyz, subst]
   | app P Q hP hQ =>
-    simp [subst, subst', StateT.run]
+    simp_subst
     sorry
   | abs z Q hQ =>
-    simp [subst, subst', StateT.run]
+    simp_subst
     sorry
 
 -- 1.8.1: One-step β-reduction; →β
