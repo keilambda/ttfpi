@@ -1,7 +1,7 @@
 import TTFPI.Basic
 
 import Aesop
-import Batteries.Data.RBMap.Lemmas
+import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Multiset.Basic
 import Mathlib.Data.Multiset.Sort
 import Mathlib.Order.Defs
@@ -128,15 +128,15 @@ instance : Decidable (ProperSubterm M N) := inferInstanceAs (Decidable (M ≠ N 
 instance : Decidable (M ⊂ N) := inferInstanceAs (Decidable (M ≠ N ∧ M ⊆ N))
 
 -- 1.4.1: The set of free variables of a λ-term
-def FV : Λ → RBSet Name
-| var x => .single x
+def FV : Λ → Finset Name
+| var x => {x}
 | app M N => FV M ∪ FV N
-| abs x M => FV M \ .single x
+| abs x M => FV M \ {x}
 
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
-def Closed (M : Λ) : Prop := M.FV.isEmpty
+def Closed (M : Λ) : Prop := M.FV.Nonempty
 
-instance : Decidable (Closed M) := inferInstanceAs (Decidable M.FV.isEmpty)
+instance : Decidable (Closed M) := inferInstanceAs (Decidable M.FV.Nonempty)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
@@ -235,7 +235,7 @@ instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans�
 -- 1.6.1: Substitution
 def gensym : StateM Nat Name := getModify Nat.succ <&> toString
 
-def gensymNotIn (fv : RBSet Name) : StateM Nat Name := do
+def gensymNotIn (fv : Finset Name) : StateM Nat Name := do
   let mut y ← gensym
   while y ∈ fv do
     y ← gensym
