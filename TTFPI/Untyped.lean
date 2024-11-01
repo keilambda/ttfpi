@@ -224,7 +224,7 @@ theorem alpha_eq_symm (h : M =α N) : N =α M := AlphaEq.symm h
 @[trans]
 theorem alpha_eq_trans (hlm : L =α M) (hmn : M =α N) : L =α N := AlphaEq.trans hlm hmn
 
-theorem eq_imp_alpha_eq (h : M = N) : M =α N := by subst h; rfl
+theorem eq_imp_alpha_eq (h : M = N) : M =α N := by rw [h]
 
 instance : IsRefl Λ (· =α ·) := ⟨AlphaEq.refl⟩
 instance : IsSymm Λ (· =α ·) := ⟨@AlphaEq.symm⟩
@@ -417,6 +417,8 @@ theorem beta_eq_symm (h : M =β N) : N =β M := BetaEq.symm h
 
 @[trans]
 theorem beta_eq_trans (hlm : L =β M) (hmn : M =β N) : L =β N := BetaEq.trans hlm hmn
+
+theorem eq_imp_beta_eq (h : M = N) : M =β N := by rw [h]
 
 -- 1.8.6: extension of ↠β, reflexivity, symmetry and transitivity
 theorem BetaEq.extension : M ↠β N → M =β N := by
