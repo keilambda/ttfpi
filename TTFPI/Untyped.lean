@@ -285,10 +285,13 @@ theorem subst_noop (h : x ∉ M.FV) : M[x := N] = M := by
     if hxy : x = y then
       simp [hxy, StateT.pure]
     else if hyn : y ∈ N.FV then
-      simp [hxy, hyn, gensymNotIn, gensym, bind, StateT.bind, StateT.pure, pure, StateT.map]
+      simp [hxy, hyn]
+      simp [hxy] at h
       sorry
     else
-      sorry
+      simp [hxy, hyn, StateT.map]
+      simp [hxy] at h
+      exact ihQ h
 
 -- 1.6.5
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
