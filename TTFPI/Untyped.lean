@@ -502,6 +502,20 @@ def B := lam "x", "y", "z" ↦ "x" :$ ("y" :$ "z")
 def C := lam "x", "y", "z" ↦ "x" :$ "z" :$ "y"
 def W := lam "x", "y" ↦ "x" :$ "y" :$ "y"
 
+def zero := lam "f", "x" ↦ "x"
+def one := lam "f", "x" ↦ "f" :$ "x"
+def two := lam "f", "x" ↦ "f" :$ ("f" :$ "x")
+def three := lam "f", "x" ↦ "f" :$ ("f" :$ ("f" :$ "x"))
+
+def add : Λ := lam "m", "n", "f", "x" ↦ "m" :$ "f" :$ ("n" :$ "f" :$ "x")
+def mul : Λ := lam "m", "n", "f", "x" ↦ "m" :$ ("n" :$ "f") :$ "x"
+
+def suc := lam "m", "f", "x" ↦ "f" :$ ("m" :$ "f" :$ "x")
+
+def true := lam "x", "y" ↦ "x"
+def false := lam "x", "y" ↦ "y"
+def not := lam "z" ↦ "z" :$ false :$ true
+
 end Combinators
 
 end Λ
