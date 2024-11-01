@@ -258,6 +258,12 @@ decreasing_by all_goals simp_wf <;> simp_arith
 
 def subst' (t : Λ) (x : Name) (N : Λ) : Λ := t.subst x N |>.run' 0
 
+def substUnsafe (t : Λ) (x : Name) (N : Λ) : Λ :=
+  match t with
+  | var y => if x = y then N else t
+  | app P Q => app (P.substUnsafe x N) (Q.substUnsafe x N)
+  | abs y P => if x = y then t else abs y (P.substUnsafe x N)
+
 syntax term "[" term ":=" term ("," term)? "]" : term
 macro_rules
 | `($M[$x := $N]) => `(subst' $M $x $N)
@@ -292,6 +298,27 @@ theorem subst_noop (h : x ∉ M.FV) : M[x := N] = M := by
       simp [hxy, hyn, StateT.map]
       simp [hxy] at h
       exact ihQ h
+
+theorem subst_unsafe_noop (h : x ∉ M.FV) : M.substUnsafe x N = M := by
+  induction M with
+  | var y =>
+    rw [substUnsafe]
+    rw [FV, Finset.mem_singleton] at h
+    exact if_neg h
+  | app P Q ihP ihQ =>
+    rw [FV, Finset.mem_union, not_or] at h
+    rw [substUnsafe, app.injEq]
+    exact ⟨ihP h.left, ihQ h.right⟩
+  | abs y P ihP =>
+    rw [FV] at h
+    rw [substUnsafe]
+    if hxy : x = y then
+      exact if_pos hxy
+    else
+      rw [Finset.mem_sdiff, Finset.mem_singleton] at h
+      simp [hxy] at h
+      simp [hxy]
+      exact ihP h
 
 -- 1.6.5
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
