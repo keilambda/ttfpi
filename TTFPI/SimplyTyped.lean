@@ -22,7 +22,7 @@ instance : ToString Typ := ⟨Typ.toString⟩
 
 instance : Coe Name Typ := ⟨var⟩
 
-infix:25 " ⇒ " => arrow
+infixr:20 " ⇒ " => arrow
 
 end Typ
 
@@ -52,6 +52,7 @@ end Term
 abbrev Declaration := Name × Typ
 abbrev Context := Finset Declaration
 
+@[aesop safe [constructors]]
 inductive Judgement : Context → Term → Typ → Prop where
 | var (Γ : Context) (x : Name) (σ : Typ) :
     (x, σ) ∈ Γ →
@@ -64,11 +65,11 @@ inductive Judgement : Context → Term → Typ → Prop where
     Judgement (insert (x, σ) Γ) M τ →
     Judgement Γ (Term.abs x σ M) (σ ⇒ τ)
 
-notation Γ " ⊢ " M " ∶ " σ => Judgement Γ M σ
+notation Γ " ⊢ " M " : " σ => Judgement Γ M σ
 
-def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M ∶ σ
+def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M : σ
 
-infix:20 " ∶ " => Statement
+notation "⊢ " M " : " σ => Statement M σ
 
 -- 2.2.7: Typeable term
-def Typeable (M : Term) : Prop := ∃ σ : Typ, M ∶ σ
+def Typeable (M : Term) : Prop := ∃ σ : Typ, ⊢ M : σ
