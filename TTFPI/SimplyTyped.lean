@@ -10,8 +10,6 @@ inductive Typ where
 | arrow (σ : Typ) (τ : Typ)
 deriving Repr
 
-instance : Coe Name Typ := ⟨Typ.var⟩
-
 namespace Typ
 
 protected def toString : Typ → String
@@ -19,6 +17,10 @@ protected def toString : Typ → String
 | arrow σ τ => "(" ++ σ.toString ++ " → " ++ τ.toString ++ ")"
 
 instance : ToString Typ := ⟨Typ.toString⟩
+
+instance : Coe Name Typ := ⟨var⟩
+
+infix:25 " ⇒ " => arrow
 
 end Typ
 
@@ -29,8 +31,6 @@ inductive Term where
 | abs (param : Name) (type : Typ) (body : Term)
 deriving Repr
 
-instance : Coe Name Term := ⟨Term.var⟩
-
 namespace Term
 
 protected def toString : Term → String
@@ -39,5 +39,9 @@ protected def toString : Term → String
 | abs x σ M => s!"(λ{x} : {σ}. {M.toString})"
 
 instance : ToString Term := ⟨Term.toString⟩
+
+instance : Coe Name Term := ⟨var⟩
+
+infixl:100 " ∙ " => app
 
 end Term
