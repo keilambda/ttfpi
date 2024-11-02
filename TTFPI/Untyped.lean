@@ -19,9 +19,9 @@ as possible, for educational purposes.
 abbrev Name := String
 
 inductive Λ where
-| var : Name → Λ
-| app : Λ → Λ → Λ
-| abs : Name → Λ → Λ
+| var (name : Name)
+| app (fn : Λ) (arg : Λ)
+| abs (param : Name) (body : Λ)
 deriving Repr, Ord, DecidableEq
 
 namespace Λ
