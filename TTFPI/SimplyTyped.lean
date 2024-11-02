@@ -1,5 +1,5 @@
 /-
-# Simply Typed λ-calculus
+# Simply Typed λ-calculus: λ→
 -/
 
 abbrev Name := String
