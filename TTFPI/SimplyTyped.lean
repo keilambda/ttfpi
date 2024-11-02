@@ -77,3 +77,9 @@ def Typeable (M : Term) : Prop := ∃ σ : Typ, ⊢ M : σ
 
 -- 2.4.10: Legal λ→-terms
 def Legal (M : Term) : Prop := ∃ Γ ρ, Γ ⊢ M : ρ
+
+-- 2.10.1: Domain, dom, subcontext, ⊆, permutation, projection
+def Domain (Γ : Context) : Multiset Name := Γ.val.map Prod.fst
+def Subcontext (Γ Γ' : Context) : Prop := Γ' ⊆ Γ
+def Permutation (Γ Γ' : Context) : Prop := Domain Γ' = Domain Γ
+def Projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (λ d => d.1 ∈ Φ)
