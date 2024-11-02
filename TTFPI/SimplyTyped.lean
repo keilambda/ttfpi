@@ -1,3 +1,5 @@
+import Mathlib.Data.Finset.Basic
+
 /-
 # Simply Typed λ-calculus: λ→
 -/
@@ -8,7 +10,7 @@ abbrev Name := String
 inductive Typ where
 | var (α : Name)
 | arrow (σ : Typ) (τ : Typ)
-deriving Repr
+deriving Repr, DecidableEq
 
 namespace Typ
 
@@ -45,3 +47,25 @@ instance : Coe Name Term := ⟨var⟩
 infixl:100 " ∙ " => app
 
 end Term
+
+-- 2.4.2: Statement, declaration, context, judgement
+abbrev Declaration := Name × Typ
+abbrev Context := Finset Declaration
+
+inductive Judgement : Context → Term → Typ → Prop where
+| var (Γ : Context) (x : Name) (σ : Typ) :
+    (x, σ) ∈ Γ →
+    Judgement Γ x σ
+| app (Γ : Context) (M N : Term) (σ τ : Typ) :
+    Judgement Γ M (σ ⇒ τ) →
+    Judgement Γ N σ →
+    Judgement Γ (M ∙ N) τ
+| abs (Γ : Context) (x : Name) (M : Term) (σ τ : Typ) :
+    Judgement (insert (x, σ) Γ) M τ →
+    Judgement Γ (Term.abs x σ M) (σ ⇒ τ)
+
+notation Γ " ⊢ " M " ∶ " σ => Judgement Γ M σ
+
+def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M ∶ σ
+
+infix:20 " ∶ " => Statement
