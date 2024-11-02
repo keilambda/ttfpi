@@ -31,21 +31,21 @@ variable {x y z u v w : Name}
 
 protected def toString : Λ → String
 | var name => name
-| app M N => s!"({Λ.toString M} {Λ.toString N})"
-| abs x M => s!"(λ{x}. {Λ.toString M})"
+| app M N => s!"({M.toString} {N.toString})"
+| abs x M => s!"(λ{x}. {M.toString})"
 
 instance : ToString Λ := ⟨Λ.toString⟩
 
-instance : Coe Name Λ := ⟨Λ.var⟩
+instance : Coe Name Λ := ⟨var⟩
 
 syntax "lam" term,+ "↦" term : term
 macro_rules
-| `(lam $x ↦ $M) => `(Λ.abs $x $M)
+| `(lam $x ↦ $M) => `(abs $x $M)
 | `(lam $x, $xs,* ↦ $M) => do
   let N ← `(lam $xs,* ↦ $M)
-  `(Λ.abs $x $N)
+  `(abs $x $N)
 
-infixl:100 " :$ " => Λ.app
+infixl:100 " :$ " => app
 
 @[simp]
 def size : Λ → Nat
@@ -53,7 +53,7 @@ def size : Λ → Nat
 | app M N => 1 + M.size + N.size
 | abs _ N => 1 + N.size
 
-instance : SizeOf Λ := ⟨Λ.size⟩
+instance : SizeOf Λ := ⟨size⟩
 
 -- 1.3.5: Multiset of subterms
 @[simp]
@@ -136,7 +136,7 @@ def FV : Λ → Finset Name
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
 def Closed (M : Λ) : Prop := M.FV.Nonempty
 
-instance : Decidable (Closed M) := inferInstanceAs (Decidable M.FV.Nonempty)
+instance : Decidable M.Closed := inferInstanceAs (Decidable M.FV.Nonempty)
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
@@ -168,7 +168,7 @@ protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingV
   match M with
   | var _ => isFalse (by rw [hasBindingVar, not_false_eq_true]; trivial)
   | app P Q =>
-    match Λ.hasDecHasBindingVar P x, Λ.hasDecHasBindingVar Q x with
+    match P.hasDecHasBindingVar x, Q.hasDecHasBindingVar x with
     | isTrue hP, _ => isTrue (by exact Or.inl hP)
     | _, isTrue hQ => isTrue (by exact Or.inr hQ)
     | isFalse hP, isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨hP, hQ⟩)
@@ -176,11 +176,11 @@ protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingV
     if h : x = y
       then isTrue (by rw [hasBindingVar]; exact Or.inl h)
       else
-        match Λ.hasDecHasBindingVar Q x with
+        match Q.hasDecHasBindingVar x with
         | isTrue hQ => isTrue (by exact Or.inr hQ)
         | isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨h, hQ⟩)
 
-instance : Decidable (M.hasBindingVar x) := Λ.hasDecHasBindingVar M x
+instance : Decidable (M.hasBindingVar x) := M.hasDecHasBindingVar x
 
 @[aesop safe [constructors]]
 inductive Renaming : Λ → Λ → Prop where
@@ -469,7 +469,7 @@ protected def hasDecIsNormalForm (M : Λ) : Decidable M.inNormalForm :=
         | isTrue hM, isTrue hN => isTrue (by rw [inNormalForm]; exact ⟨h, hM, hN⟩)
   | abs _ M => M.hasDecIsNormalForm
 
-instance : Decidable (M.inNormalForm) := Λ.hasDecIsNormalForm M
+instance : Decidable M.inNormalForm := M.hasDecIsNormalForm
 
 def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
 
