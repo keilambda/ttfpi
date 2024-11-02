@@ -4,7 +4,8 @@ This is a formalization of the book "Type Theory and Formal Proof: An Introducti
 
 ## Chapters
 
-1. [Untyped lambda calculus](./TTFPI/Untyped.lean)
+1. [Untyped Lambda Calculus](./TTFPI/Untyped.lean)
+2. [Simply Typed Lambda Calculus](./TTFPI/SimplyTyped.lean)
 
 ## License
 
