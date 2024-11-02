@@ -30,3 +30,14 @@ inductive Term where
 deriving Repr
 
 instance : Coe Name Term := ⟨Term.var⟩
+
+namespace Term
+
+protected def toString : Term → String
+| var name => name
+| app M N => s!"({M.toString} {N.toString})"
+| abs x σ M => s!"(λ{x} : {σ}. {M.toString})"
+
+instance : ToString Term := ⟨Term.toString⟩
+
+end Term
