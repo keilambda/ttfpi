@@ -69,3 +69,6 @@ notation Γ " ⊢ " M " ∶ " σ => Judgement Γ M σ
 def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M ∶ σ
 
 infix:20 " ∶ " => Statement
+
+-- 2.2.7: Typeable term
+def Typeable (M : Term) : Prop := ∃ σ : Typ, M ∶ σ
