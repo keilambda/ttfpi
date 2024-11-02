@@ -45,7 +45,7 @@ macro_rules
   let N ← `(lam $xs,* ↦ $M)
   `(abs $x $N)
 
-infixl:100 " :$ " => app
+infixl:100 " ∙ " => app
 
 @[simp]
 def size : Λ → Nat
@@ -510,40 +510,40 @@ def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
 -- 1.10.1: Fixpoint
 theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
   intro L
-  let U := lam "x" ↦ L :$ ("x" :$ "x")
-  let M := U :$ U
-  have h : M →β (L :$ M) := sorry
+  let U := lam "x" ↦ L ∙ ("x" ∙ "x")
+  let M := U ∙ U
+  have h : M →β (L ∙ M) := sorry
   exact ⟨M, .betaInv h⟩
 
 namespace Combinators
 
-def Ω := (lam "x" ↦ "x" :$ "x") :$ (lam "x" ↦ "x" :$ "x")
-def Δ := lam "x" ↦ "x" :$ "x" :$ "x"
-def Y := lam "f" ↦ (lam "x" ↦ "f" :$ ("x" :$ "x")) :$ (lam "x" ↦ "f" :$ ("x" :$ "x"))
+def Ω := (lam "x" ↦ "x" ∙ "x") ∙ (lam "x" ↦ "x" ∙ "x")
+def Δ := lam "x" ↦ "x" ∙ "x" ∙ "x"
+def Y := lam "f" ↦ (lam "x" ↦ "f" ∙ ("x" ∙ "x")) ∙ (lam "x" ↦ "f" ∙ ("x" ∙ "x"))
 
 -- SKI
-def S := lam "x", "y", "z" ↦ ("x" :$ "z") :$ ("y" :$ "z")
+def S := lam "x", "y", "z" ↦ ("x" ∙ "z") ∙ ("y" ∙ "z")
 def K := lam "x", "y" ↦ "x"
 def I := lam "x" ↦ "x"
 
 -- BCKW
-def B := lam "x", "y", "z" ↦ "x" :$ ("y" :$ "z")
-def C := lam "x", "y", "z" ↦ "x" :$ "z" :$ "y"
-def W := lam "x", "y" ↦ "x" :$ "y" :$ "y"
+def B := lam "x", "y", "z" ↦ "x" ∙ ("y" ∙ "z")
+def C := lam "x", "y", "z" ↦ "x" ∙ "z" ∙ "y"
+def W := lam "x", "y" ↦ "x" ∙ "y" ∙ "y"
 
 def zero := lam "f", "x" ↦ "x"
-def one := lam "f", "x" ↦ "f" :$ "x"
-def two := lam "f", "x" ↦ "f" :$ ("f" :$ "x")
-def three := lam "f", "x" ↦ "f" :$ ("f" :$ ("f" :$ "x"))
+def one := lam "f", "x" ↦ "f" ∙ "x"
+def two := lam "f", "x" ↦ "f" ∙ ("f" ∙ "x")
+def three := lam "f", "x" ↦ "f" ∙ ("f" ∙ ("f" ∙ "x"))
 
-def add : Λ := lam "m", "n", "f", "x" ↦ "m" :$ "f" :$ ("n" :$ "f" :$ "x")
-def mul : Λ := lam "m", "n", "f", "x" ↦ "m" :$ ("n" :$ "f") :$ "x"
+def add : Λ := lam "m", "n", "f", "x" ↦ "m" ∙ "f" ∙ ("n" ∙ "f" ∙ "x")
+def mul : Λ := lam "m", "n", "f", "x" ↦ "m" ∙ ("n" ∙ "f") ∙ "x"
 
-def suc := lam "m", "f", "x" ↦ "f" :$ ("m" :$ "f" :$ "x")
+def suc := lam "m", "f", "x" ↦ "f" ∙ ("m" ∙ "f" ∙ "x")
 
 def true := lam "x", "y" ↦ "x"
 def false := lam "x", "y" ↦ "y"
-def not := lam "z" ↦ "z" :$ false :$ true
+def not := lam "z" ↦ "z" ∙ false ∙ true
 
 end Combinators
 
