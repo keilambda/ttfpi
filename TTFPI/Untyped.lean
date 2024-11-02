@@ -444,13 +444,13 @@ def isRedex : Λ → Prop
 | app (abs _ _) _ => True
 | _ => False
 
-instance : Decidable (M.isRedex) :=
+instance : Decidable M.isRedex :=
   match M with
-  | var _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
-  | app (var _) _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
-  | app (app _ _) _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
-  | app (abs _ _) _ => isTrue (by rw [isRedex]; reduce; trivial)
-  | abs _ _ => isFalse (by rw [isRedex, not_false_eq_true]; trivial)
+  | var _ => isFalse (by dsimp [isRedex]; trivial)
+  | app (var _) _ => isFalse (by dsimp [isRedex]; trivial)
+  | app (app _ _) _ => isFalse (by dsimp [isRedex]; trivial)
+  | app (abs _ _) _ => isTrue (by rw [isRedex]; trivial)
+  | abs _ _ => isFalse (by dsimp [isRedex]; trivial)
 
 def inNormalForm : Λ → Prop
 | var _ => True
@@ -482,13 +482,10 @@ theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
     rw [not_true_eq_false, false_and] at h
     contradiction
   | @compatAppLeft L M N _ IH =>
-    rw [inNormalForm, isRedex] at h
     exact congrFun (congrArg app (IH h.right.left)) L
   | @compatAppRight L M N _ IH =>
-    rw [inNormalForm, isRedex] at h
     exact congrArg (app L) (IH h.right.right)
   | @compatAbs x M N _ IH =>
-    rw [inNormalForm] at h
     exact congrArg (abs x) (IH h)
 
 @[simp]

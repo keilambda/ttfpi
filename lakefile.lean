@@ -9,9 +9,9 @@ lean_lib «TTFPI» where
     ⟨`autoImplicit, false⟩
   ]
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.11.0"
-require aesop from git "https://github.com/leanprover-community/aesop" @ "v4.11.0"
-require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.11.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.13.0"
+require aesop from git "https://github.com/leanprover-community/aesop" @ "v4.13.0"
+require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.13.0"
 
 @[default_target]
 lean_exe «ttfpi» where
