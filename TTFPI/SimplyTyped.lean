@@ -10,6 +10,8 @@ inductive Typ where
 | arrow (σ : Typ) (τ : Typ)
 deriving Repr
 
+instance : Coe Name Typ := ⟨Typ.var⟩
+
 namespace Typ
 
 protected def toString : Typ → String
