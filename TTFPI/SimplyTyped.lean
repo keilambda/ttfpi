@@ -52,6 +52,7 @@ end Term
 abbrev Declaration := Name × Typ
 abbrev Context := Finset Declaration
 
+-- 2.4.5: Derivation rules for λ→
 @[aesop safe [constructors]]
 inductive Judgement : Context → Term → Typ → Prop where
 | var (Γ : Context) (x : Name) (σ : Typ) :
@@ -73,3 +74,6 @@ notation "⊢ " M " : " σ => Statement M σ
 
 -- 2.2.7: Typeable term
 def Typeable (M : Term) : Prop := ∃ σ : Typ, ⊢ M : σ
+
+-- 2.4.10: Legal λ→-terms
+def Legal (M : Term) : Prop := ∃ Γ ρ, Γ ⊢ M : ρ
