@@ -1,3 +1,5 @@
+import TTFPI.Basic
+
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Image
 import Mathlib.Order.Heyting.Basic
@@ -5,8 +7,6 @@ import Mathlib.Order.Heyting.Basic
 /-
 # Simply Typed λ-calculus: λ→
 -/
-
-abbrev Name := String
 
 -- 2.2.1: The set Typ of all simple types
 inductive Typ where

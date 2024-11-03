@@ -16,8 +16,6 @@ as possible, for educational purposes.
 -/
 
 -- 1.3.2: The set Λ of all λ-terms
-abbrev Name := String
-
 inductive Λ where
 | var (name : Name)
 | app (fn : Λ) (arg : Λ)
