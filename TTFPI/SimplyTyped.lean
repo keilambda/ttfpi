@@ -1,5 +1,6 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Image
+import Mathlib.Order.Heyting.Basic
 
 /-
 # Simply Typed λ-calculus: λ→
@@ -89,3 +90,25 @@ def Domain (Γ : Context) : Finset Name := Γ.image Prod.fst
 def Subcontext (Γ Δ : Context) : Prop := Δ ⊆ Γ
 def Permutation (Γ Δ : Context) : Prop := Domain Δ = Domain Γ
 def Projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (·.1 ∈ Φ)
+
+-- 2.10.3: Free Variables Lemma
+theorem domain_insert_eq_insert_domain {Γ : Context} {x : Name} {σ : Typ} : Domain (insert (x, σ) Γ) = insert x (Domain Γ) := by
+  simp [Domain]
+
+theorem Finset.diff_subset_iff {α : Type*} [DecidableEq α] {s t u : Finset α} : s \ t ⊆ u ↔ s ⊆ t ∪ u :=
+  show s \ t ≤ u ↔ s ≤ t ∪ u from sdiff_le_iff
+
+theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ L : σ) : L.FV ⊆ Domain Γ := by
+  induction J with
+  | var Δ x α h =>
+    simp [Term.FV, Domain]
+    exact ⟨α, h⟩
+  | app Δ M N α β jM jN ihM ihN =>
+    simp [Term.FV]
+    apply Finset.union_subset
+    · exact ihM
+    · exact ihN
+  | abs Δ x M α β Δ' ihM =>
+    simp [Term.FV]
+    simp [domain_insert_eq_insert_domain] at ihM
+    exact Finset.diff_subset_iff.mpr ihM
