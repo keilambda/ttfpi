@@ -47,6 +47,11 @@ instance : Coe Name Term := ⟨var⟩
 
 infixl:100 " ∙ " => app
 
+def FV : Term → Finset Name
+| var x => {x}
+| app M N => FV M ∪ FV N
+| abs x _ M => FV M \ {x}
+
 end Term
 
 -- 2.4.2: Statement, declaration, context, judgement
