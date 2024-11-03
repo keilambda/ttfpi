@@ -1,4 +1,5 @@
 import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Finset.Image
 
 /-
 # Simply Typed λ-calculus: λ→
@@ -79,7 +80,7 @@ def Typeable (M : Term) : Prop := ∃ σ : Typ, ⊢ M : σ
 def Legal (M : Term) : Prop := ∃ Γ ρ, Γ ⊢ M : ρ
 
 -- 2.10.1: Domain, dom, subcontext, ⊆, permutation, projection
-def Domain (Γ : Context) : Multiset Name := Γ.val.map Prod.fst
-def Subcontext (Γ Γ' : Context) : Prop := Γ' ⊆ Γ
-def Permutation (Γ Γ' : Context) : Prop := Domain Γ' = Domain Γ
-def Projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (λ d => d.1 ∈ Φ)
+def Domain (Γ : Context) : Finset Name := Γ.image Prod.fst
+def Subcontext (Γ Δ : Context) : Prop := Δ ⊆ Γ
+def Permutation (Γ Δ : Context) : Prop := Domain Δ = Domain Γ
+def Projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (·.1 ∈ Φ)
