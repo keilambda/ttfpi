@@ -160,3 +160,19 @@ theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ 
   | abs Δ' x L ρ τ Θ ih =>
     apply Judgement.abs
     sorry
+
+-- 2.10.7: Generation Lemma
+theorem generation_var {Γ : Context} {x : Name} {σ : Typ} : (Γ ⊢ x : σ) ↔ (x, σ) ∈ Γ := by
+  apply Iff.intro
+  · intro h; cases h; assumption
+  · intro h; apply Judgement.var; assumption
+
+theorem generation_app {Γ : Context} {M N : Term} {τ : Typ} : (Γ ⊢ M ∙ N : τ) ↔ (∃ σ : Typ, (Γ ⊢ M : σ ⇒ τ) ∧ (Γ ⊢ N : σ)) := by
+  apply Iff.intro
+  · intro h; cases h; case mp.app σ hn hm => exact ⟨σ, ⟨hm, hn⟩⟩
+  · intro h; cases h; case mpr.intro σ h => apply Judgement.app; exact h.left; exact h.right
+
+theorem generation_abs {Γ : Context} {x : Name} {M : Term} {σ ρ : Typ} : (Γ ⊢ Term.abs x σ M : ρ) ↔ (∃ τ : Typ, ((insert (x, σ) Γ) ⊢ M : τ) ∧ ρ = (σ ⇒ τ)) := by
+  apply Iff.intro
+  · intro h; cases h; case mp.abs τ h => exact ⟨τ, ⟨h, rfl⟩⟩
+  · intro h; cases h; case mpr.intro τ h => rw [h.right]; apply Judgement.abs; exact h.left
