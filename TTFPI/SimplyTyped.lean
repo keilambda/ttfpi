@@ -114,3 +114,49 @@ theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ 
     simp [Term.FV]
     simp [dom_insert_eq_insert_dom] at ihM
     exact Finset.diff_subset_iff.mpr ihM
+
+-- 2.10.5: Thinning, Condensing, Permutation
+theorem thinning {Γ Δ : Context} {M : Term} {σ : Typ} (h : Γ ⊆ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
+  intro J
+  induction J with
+  | var Δ' x α h' =>
+    apply Judgement.var
+    exact h h'
+  | app Δ' P Q α β jP jQ ihP ihQ =>
+    apply Judgement.app
+    · exact ihP h
+    · exact ihQ h
+  | abs Δ' x P α β Δ' ih =>
+    apply Judgement.abs
+    sorry
+
+theorem condensing {Γ : Context} {M : Term} {σ : Typ} (J : Γ ⊢ M : σ) : (Γ ↾ M.FV) ⊢ M : σ := by
+  induction J with
+  | var Δ x α h =>
+    apply Judgement.var
+    simp [Term.FV]
+    sorry
+  | app Δ P Q α β jP jQ ihP ihQ =>
+    apply Judgement.app
+    simp [Term.FV]
+    · sorry
+    · sorry
+    · sorry
+  | abs Δ x P α β Δ' ih =>
+    apply Judgement.abs
+    simp [Term.FV]
+    sorry
+
+theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
+  intro J
+  induction J with
+  | var Δ' x α h' =>
+    apply Judgement.var
+    sorry
+  | app Δ' P Q α β jP jQ ihP ihQ =>
+    apply Judgement.app
+    · exact ihP h
+    · exact ihQ h
+  | abs Δ' x L ρ τ Θ ih =>
+    apply Judgement.abs
+    sorry
