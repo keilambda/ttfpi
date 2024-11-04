@@ -194,3 +194,29 @@ theorem generation_abs {Γ : Context} {x : Name} {M : Term} {σ ρ : Typ} : (Γ 
   apply Iff.intro
   · intro h; cases h; case mp.abs τ h => exact ⟨τ, ⟨h, rfl⟩⟩
   · intro h; cases h; case mpr.intro τ h => rw [h.right]; apply Judgement.abs; exact h.left
+
+-- 2.10.8: Subterm Lemma
+theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
+  intro N hN
+  cases h with
+  | intro Γ h =>
+    obtain ⟨ρ, J⟩ := h
+    induction J with
+    | var Δ x α h =>
+      simp at hN
+      subst hN
+      exact ⟨Δ, α, by apply Judgement.var; exact h⟩
+    | app Δ P Q α β jP jQ ihP ihQ =>
+      simp [Legal]
+      simp at hN
+      cases hN with
+      | inl h => subst h; exact ⟨Δ, β, Judgement.app _ _ _ _ _ jP jQ⟩
+      | inr h => cases h with
+        | inl h => simp at ihP; exact ihP h
+        | inr h => simp at ihQ; exact ihQ h
+    | abs Δ x P α β Δ' ih =>
+      simp [Legal]
+      simp at hN
+      cases hN with
+      | inl h => subst h; exact ⟨Δ, (α ⇒ β), by apply Judgement.abs; exact Δ'⟩
+      | inr h => simp at ih; exact ih h
