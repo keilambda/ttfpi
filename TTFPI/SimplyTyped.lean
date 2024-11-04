@@ -89,7 +89,10 @@ def Legal (M : Term) : Prop := ∃ Γ ρ, Γ ⊢ M : ρ
 def Domain (Γ : Context) : Finset Name := Γ.image Prod.fst
 def Subcontext (Γ Δ : Context) : Prop := Δ ⊆ Γ
 def Permutation (Γ Δ : Context) : Prop := Domain Δ = Domain Γ
-def Projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (·.1 ∈ Φ)
+def Projection (Γ : Context) (Φ : Finset Name) : Context :=
+  Γ.filter (λ (n, _) => n ∈ (Domain Γ ∩ Φ))
+
+infix:60 " ↾ " => Projection
 
 -- 2.10.3: Free Variables Lemma
 theorem domain_insert_eq_insert_domain {Γ : Context} {x : Name} {σ : Typ} : Domain (insert (x, σ) Γ) = insert x (Domain Γ) := by
