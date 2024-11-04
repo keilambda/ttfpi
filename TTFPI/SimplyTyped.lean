@@ -86,25 +86,24 @@ def Typeable (M : Term) : Prop := ∃ σ : Typ, ⊢ M : σ
 def Legal (M : Term) : Prop := ∃ Γ ρ, Γ ⊢ M : ρ
 
 -- 2.10.1: Domain, dom, subcontext, ⊆, permutation, projection
-def Domain (Γ : Context) : Finset Name := Γ.image Prod.fst
+def dom (Γ : Context) : Finset Name := Γ.image Prod.fst
 def Subcontext (Γ Δ : Context) : Prop := Δ ⊆ Γ
-def Permutation (Γ Δ : Context) : Prop := Domain Δ = Domain Γ
-def Projection (Γ : Context) (Φ : Finset Name) : Context :=
-  Γ.filter (λ (n, _) => n ∈ (Domain Γ ∩ Φ))
+def Permutation (Γ Δ : Context) : Prop := dom Δ = dom Γ
+def projection (Γ : Context) (Φ : Finset Name) : Context := Γ.filter (·.1 ∈ dom Γ ∩ Φ)
 
-infix:60 " ↾ " => Projection
+infix:60 " ↾ " => projection
 
 -- 2.10.3: Free Variables Lemma
-theorem domain_insert_eq_insert_domain {Γ : Context} {x : Name} {σ : Typ} : Domain (insert (x, σ) Γ) = insert x (Domain Γ) := by
-  simp [Domain]
+theorem dom_insert_eq_insert_dom {Γ : Context} {x : Name} {σ : Typ} : dom (insert (x, σ) Γ) = insert x (dom Γ) := by
+  simp [dom]
 
 theorem Finset.diff_subset_iff {α : Type*} [DecidableEq α] {s t u : Finset α} : s \ t ⊆ u ↔ s ⊆ t ∪ u :=
   show s \ t ≤ u ↔ s ≤ t ∪ u from sdiff_le_iff
 
-theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ L : σ) : L.FV ⊆ Domain Γ := by
+theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ L : σ) : L.FV ⊆ dom Γ := by
   induction J with
   | var Δ x α h =>
-    simp [Term.FV, Domain]
+    simp [Term.FV, dom]
     exact ⟨α, h⟩
   | app Δ M N α β jM jN ihM ihN =>
     simp [Term.FV]
@@ -113,5 +112,5 @@ theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ 
     · exact ihN
   | abs Δ x M α β Δ' ihM =>
     simp [Term.FV]
-    simp [domain_insert_eq_insert_domain] at ihM
+    simp [dom_insert_eq_insert_dom] at ihM
     exact Finset.diff_subset_iff.mpr ihM
