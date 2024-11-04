@@ -33,9 +33,11 @@ inductive Term where
 | var (name : Name)
 | app (fn : Term) (arg : Term)
 | abs (param : Name) (type : Typ) (body : Term)
-deriving Repr
+deriving Repr, DecidableEq
 
 namespace Term
+
+variable {M N : Term}
 
 protected def toString : Term → String
 | var name => name
@@ -47,6 +49,22 @@ instance : ToString Term := ⟨Term.toString⟩
 instance : Coe Name Term := ⟨var⟩
 
 infixl:100 " ∙ " => app
+
+@[simp]
+def Sub (L : Term) : Multiset Term :=
+  match L with
+  | var _ => {L}
+  | app M N => L ::ₘ (Sub M + Sub N)
+  | abs _ _ M => L ::ₘ Sub M
+
+@[simp]
+def Subterm (L M : Term) : Prop := L ∈ Sub M
+
+@[simp]
+instance : HasSubset Term := ⟨Subterm⟩
+
+instance : Decidable (Subterm M N) := inferInstanceAs (Decidable (M ∈ Sub N))
+instance : Decidable (Subset M N) := inferInstanceAs (Decidable (M ∈ Sub N))
 
 def FV : Term → Finset Name
 | var x => {x}
