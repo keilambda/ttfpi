@@ -227,3 +227,9 @@ theorem uniqueness_of_types {Γ : Context} {M : Term} {σ τ : Typ} (Jσ : Γ �
   | var x => sorry
   | app P Q ihP ihQ => sorry
   | abs x ρ M ih => sorry
+
+-- 2.10.10: Decidability of Well-typedness, Type Assignment, Type Checking and Term Finding
+def WellTyped (M : Term) : Prop := ∃ σ, ⊢ M : σ
+def TypeAssignment (Γ : Context) (M : Term) : Prop := ∃ σ, Γ ⊢ M : σ
+def TypeChecking (Γ : Context) (M : Term) (σ : Typ) : Prop := Γ ⊢ M : σ
+def TermFinding (Γ : Context) (σ : Typ) : Prop := ∃ M, Γ ⊢ M : σ
