@@ -220,3 +220,10 @@ theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
       cases hN with
       | inl h => subst h; exact ⟨Δ, (α ⇒ β), by apply Judgement.abs; exact Δ'⟩
       | inr h => simp at ih; exact ih h
+
+-- 2.10.9: Uniqueness of Types
+theorem uniqueness_of_types {Γ : Context} {M : Term} {σ τ : Typ} (Jσ : Γ ⊢ M : σ) (Jτ : Γ ⊢ M : τ) : σ = τ := by
+  induction M with
+  | var x => sorry
+  | app P Q ihP ihQ => sorry
+  | abs x ρ M ih => sorry
