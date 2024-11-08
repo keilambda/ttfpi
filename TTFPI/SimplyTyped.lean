@@ -238,9 +238,82 @@ theorem uniqueness_of_types {Γ : Context} {M : Term} {σ τ : Typ} (Jσ : Γ �
 -- 2.10.10: Decidability of Well-typedness, Type Assignment, Type Checking and Term Finding
 @[simp]
 def WellTyped (M : Term) : Prop := ∃ σ, ⊢ M : σ
+
 @[simp]
 def TypeAssignment (Γ : Context) (M : Term) : Prop := ∃ σ, Γ ⊢ M : σ
+
 @[simp]
 def TypeChecking (Γ : Context) (M : Term) (σ : Typ) : Prop := Γ ⊢ M : σ
+
 @[simp]
 def TermFinding (Γ : Context) (σ : Typ) : Prop := ∃ M, Γ ⊢ M : σ
+
+def hasDecTypeable (M : Term) : Decidable (Typeable M) :=
+  match M with
+  | .var x => by
+    simp only [Typeable, Statement]
+    let σ : Typ := "σ"
+    let Γ : Context := {(x, σ)}
+    exact isTrue ⟨σ, Γ, by apply Judgement.var; rw [Finset.mem_singleton]⟩
+  | .app P Q => by
+    match hasDecTypeable P, hasDecTypeable Q with
+    | isTrue tP, isTrue tQ =>
+      simp only [Typeable, Statement] at *
+      match P with
+      | .var x =>
+        let σ : Typ := "σ"
+        let τ : Typ := "τ"
+        let Γ : Context := {(x, σ ⇒ τ)}
+        match Q with
+        | .var y => exact isTrue ⟨τ, insert (y, σ) Γ, by apply Judgement.app; aesop; aesop⟩
+        | .app R S => sorry
+        | .abs y ρ N => sorry
+      | .app R S => sorry
+      | .abs x ρ M => sorry
+    | isFalse tP, _ => sorry
+    | _, isFalse tQ => sorry
+  | .abs x ρ P => by
+    match hasDecTypeable P with
+    | isTrue tP =>
+      simp [Typeable, Statement] at *
+      let σ : Typ := "σ"
+      let Γ : Context := {(x, ρ)}
+      sorry
+    | isFalse ntP =>
+      simp [Typeable, Statement] at ntP
+      sorry
+
+def hasDecWellTyped (M : Term) : Decidable (WellTyped M) := hasDecTypeable M
+
+def hasDecTypeAssignment (Γ : Context) (M : Term) : Decidable (TypeAssignment Γ M) := sorry
+
+def hasDecTypeChecking (Γ : Context) (M : Term) (σ : Typ) : Decidable (TypeChecking Γ M σ) :=
+  match M with
+  | .var x => by
+    if h : (x, σ) ∈ Γ then
+      exact isTrue (Judgement.var Γ x σ h)
+    else
+      dsimp
+      rw [generation_var]
+      exact isFalse (fun nh => by contradiction)
+  | .app P Q => by
+    rw [TypeChecking]
+    match hasDecTypeChecking Γ P (σ ⇒ σ), hasDecTypeChecking Γ Q σ with
+    | isTrue jP, isTrue jQ => exact isTrue (Judgement.app Γ P Q σ σ jP jQ)
+    | isFalse njP, isTrue jQ => sorry
+    | isTrue jP, isFalse njQ => sorry
+    | isFalse njP, isFalse njQ => sorry
+  | .abs x ρ P => by
+    rw [TypeChecking]
+    let τ : Typ := "τ"
+    match hasDecTypeChecking (insert (x, ρ) Γ) P τ with
+    | isTrue jP => sorry
+    | isFalse njP => sorry
+
+def hasDecTermFinding (Γ : Context) (σ : Typ) : Decidable (TermFinding Γ σ) := sorry
+
+instance {M : Term} : Decidable (Typeable M) := hasDecTypeable M
+instance {M : Term} : Decidable (WellTyped M) := hasDecWellTyped M
+instance {Γ : Context} {M : Term} : Decidable (TypeAssignment Γ M) := hasDecTypeAssignment Γ M
+instance {Γ : Context} {M : Term} {σ : Typ} : Decidable (TypeChecking Γ M σ) := hasDecTypeChecking Γ M σ
+instance {Γ : Context} {σ : Typ} : Decidable (TermFinding Γ σ) := hasDecTermFinding Γ σ
