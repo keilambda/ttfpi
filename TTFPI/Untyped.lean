@@ -264,40 +264,9 @@ def substUnsafe (t : Λ) (x : Name) (N : Λ) : Λ :=
 
 syntax term "[" term ":=" term ("," term)? "]" : term
 macro_rules
-| `($M[$x := $N]) => `(subst' $M $x $N)
-| `($M[$x := $N, $n]) => `(subst $M $x $N |>.run' $n)
+| `($M[$x := $N]) => `(substUnsafe $M $x $N)
 
-syntax (name := simp_subst) "simp_subst" : tactic
-macro_rules
-| `(tactic| simp_subst) =>
-  `(tactic| simp [subst', StateT.run, subst, pure, StateT.pure, Seq.seq, StateT.bind, StateT.map, Functor.map])
-
-theorem subst_noop (h : x ∉ M.FV) : M[x := N] = M := by
-  induction M with
-  | var y =>
-    simp_subst
-    rw [FV, Finset.mem_singleton] at h
-    intro hxy
-    contradiction
-  | app P Q ihP ihQ =>
-    simp_subst
-    rw [FV, Finset.mem_union, not_or] at h
-    exact ⟨ihP h.left, sorry⟩
-  | abs y Q ihQ =>
-    simp_subst
-    rw [FV] at h
-    if hxy : x = y then
-      simp [hxy, StateT.pure]
-    else if hyn : y ∈ N.FV then
-      simp [hxy, hyn]
-      simp [hxy] at h
-      sorry
-    else
-      simp [hxy, hyn, StateT.map]
-      simp [hxy] at h
-      exact ihQ h
-
-theorem subst_unsafe_noop (h : x ∉ M.FV) : M.substUnsafe x N = M := by
+theorem substUnsafe_noop (h : x ∉ M.FV) : M.substUnsafe x N = M := by
   induction M with
   | var y =>
     rw [substUnsafe]
@@ -322,24 +291,16 @@ theorem subst_unsafe_noop (h : x ∉ M.FV) : M.substUnsafe x N = M := by
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
   induction M with
   | var z =>
-    simp_subst
     by_cases hxz : x = z
     · simp [hxz]
       by_cases hyz : y = z
       · subst hxz hyz; contradiction
-      · simp [hyz]; simp_subst
+      · simp [hyz, substUnsafe]
     · by_cases hyz : y = z
-      · simp [hxz, hyz]
-        simp_subst
-        unfold subst
-        sorry
-      · simp [hxz, hyz, subst]
-  | app P Q hP hQ =>
-    simp_subst
-    sorry
-  | abs z Q hQ =>
-    simp_subst
-    sorry
+      · simp [hxz, hyz, substUnsafe, substUnsafe_noop hxm]
+      · simp [hxz, hyz, substUnsafe]
+  | app P Q hP hQ => sorry
+  | abs z Q hQ => sorry
 
 -- 1.8.1: One-step β-reduction; →β
 def reduceβ (t : Λ) : Λ :=
@@ -506,12 +467,12 @@ def isWeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M ↠�
 def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
 
 -- 1.10.1: Fixpoint
-theorem fixpoint : ∀ L : Λ, ∃ M : Λ, app L M =β M := by
-  intro L
-  let U := lam "x" ↦ L ∙ ("x" ∙ "x")
+theorem fixpoint {x : Name} (L : Λ) (h : x ∉ L.FV) : ∃ M : Λ, app L M =β M := by
+  let U := lam x ↦ L ∙ (x ∙ x)
   let M := U ∙ U
-  have h : M →β (L ∙ M) := sorry
-  exact ⟨M, .betaInv h⟩
+  have : M →β (L ∙ (x ∙ x)).substUnsafe x U := Beta.redex ..
+  simp [substUnsafe, substUnsafe_noop h] at this
+  exact ⟨M, .betaInv this⟩
 
 namespace Combinators
 
