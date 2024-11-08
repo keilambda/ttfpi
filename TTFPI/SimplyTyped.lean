@@ -134,6 +134,7 @@ theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ 
     exact Finset.diff_subset_iff.mpr ihM
 
 -- 2.10.5: Thinning, Condensing, Permutation
+@[simp]
 theorem thinning {Γ Δ : Context} {M : Term} {σ : Typ} (h : Γ ⊆ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
   intro J
   induction J with
@@ -148,6 +149,7 @@ theorem thinning {Γ Δ : Context} {M : Term} {σ : Typ} (h : Γ ⊆ Δ) : (Γ �
     apply Judgement.abs
     sorry
 
+@[simp]
 theorem condensing {Γ : Context} {M : Term} {σ : Typ} (J : Γ ⊢ M : σ) : (Γ ↾ M.FV) ⊢ M : σ := by
   induction J with
   | var Δ x α h =>
@@ -165,6 +167,7 @@ theorem condensing {Γ : Context} {M : Term} {σ : Typ} (J : Γ ⊢ M : σ) : (�
     simp [Term.FV]
     sorry
 
+@[simp]
 theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
   intro J
   induction J with
@@ -180,16 +183,19 @@ theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ 
     sorry
 
 -- 2.10.7: Generation Lemma
+@[simp]
 theorem generation_var {Γ : Context} {x : Name} {σ : Typ} : (Γ ⊢ x : σ) ↔ (x, σ) ∈ Γ := by
   apply Iff.intro
   · intro h; cases h; assumption
   · intro h; apply Judgement.var; assumption
 
+@[simp]
 theorem generation_app {Γ : Context} {M N : Term} {τ : Typ} : (Γ ⊢ M ∙ N : τ) ↔ (∃ σ : Typ, (Γ ⊢ M : σ ⇒ τ) ∧ (Γ ⊢ N : σ)) := by
   apply Iff.intro
   · intro h; cases h; case mp.app σ hn hm => exact ⟨σ, ⟨hm, hn⟩⟩
   · intro h; cases h; case mpr.intro σ h => apply Judgement.app; exact h.left; exact h.right
 
+@[simp]
 theorem generation_abs {Γ : Context} {x : Name} {M : Term} {σ ρ : Typ} : (Γ ⊢ Term.abs x σ M : ρ) ↔ (∃ τ : Typ, ((insert (x, σ) Γ) ⊢ M : τ) ∧ ρ = (σ ⇒ τ)) := by
   apply Iff.intro
   · intro h; cases h; case mp.abs τ h => exact ⟨τ, ⟨h, rfl⟩⟩
@@ -222,6 +228,7 @@ theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
       | inr h => simp at ih; exact ih h
 
 -- 2.10.9: Uniqueness of Types
+@[simp]
 theorem uniqueness_of_types {Γ : Context} {M : Term} {σ τ : Typ} (Jσ : Γ ⊢ M : σ) (Jτ : Γ ⊢ M : τ) : σ = τ := by
   induction M with
   | var x => sorry
@@ -229,7 +236,11 @@ theorem uniqueness_of_types {Γ : Context} {M : Term} {σ τ : Typ} (Jσ : Γ �
   | abs x ρ M ih => sorry
 
 -- 2.10.10: Decidability of Well-typedness, Type Assignment, Type Checking and Term Finding
+@[simp]
 def WellTyped (M : Term) : Prop := ∃ σ, ⊢ M : σ
+@[simp]
 def TypeAssignment (Γ : Context) (M : Term) : Prop := ∃ σ, Γ ⊢ M : σ
+@[simp]
 def TypeChecking (Γ : Context) (M : Term) (σ : Typ) : Prop := Γ ⊢ M : σ
+@[simp]
 def TermFinding (Γ : Context) (σ : Typ) : Prop := ∃ M, Γ ⊢ M : σ
