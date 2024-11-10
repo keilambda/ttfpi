@@ -335,3 +335,20 @@ instance {M : Term} : Decidable (WellTyped M) := hasDecWellTyped M
 instance {Γ : Context} {M : Term} : Decidable (TypeAssignment Γ M) := hasDecTypeAssignment Γ M
 instance {Γ : Context} {M : Term} {σ : Typ} : Decidable (TypeChecking Γ M σ) := hasDecTypeChecking Γ M σ
 instance {Γ : Context} {σ : Typ} : Decidable (TermFinding Γ σ) := hasDecTermFinding Γ σ
+
+-- 2.11.1: Substitution Lemma
+def subst (M : Term) (x : Name) (N : Term) : Term :=
+  match M with
+  | .var y => if x = y then N else M
+  | .app P Q => .app (subst P x N) (subst Q x N)
+  | .abs y σ P => if x = y ∨ y ∈ N.FV then M else .abs y σ (subst P x N)
+
+syntax term "[" term ":=" term ("," term)? "]" : term
+macro_rules
+| `($M[$x := $N]) => `(subst $M $x $N)
+
+theorem substitution {Γ Δ : Context} {M N : Term} {x : Name} {σ τ : Typ}
+  (hM : insert (x, σ) (Γ ∪ Δ) ⊢ M : τ)
+  (hN : Γ ⊢ N : σ)
+  : (Γ ∪ Δ) ⊢ M[x := N] : τ := by
+  sorry
