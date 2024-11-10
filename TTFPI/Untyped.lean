@@ -68,16 +68,16 @@ def Subterm (L M : Λ) : Prop := L ∈ Sub M
 instance : HasSubset Λ := ⟨Subterm⟩
 
 -- 1.3.6
-instance instIsReflInSub : IsRefl Λ (· ∈ Sub ·) where
+instance : IsRefl Λ (· ∈ Sub ·) where
   refl M := by
     induction M with
     | var _ => rw [Sub, Multiset.mem_singleton]
     | app P Q => rw [Sub]; exact Multiset.mem_cons_self ..
     | abs _ Q => rw [Sub]; exact Multiset.mem_cons_self ..
 
-instance instIsReflSubterm : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
+instance : IsRefl Λ Subterm := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
-instance instIsReflSubset : IsRefl Λ Subset := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
+instance : IsRefl Λ Subset := inferInstanceAs (IsRefl Λ (· ∈ Sub ·))
 
 instance : IsTrans Λ (· ∈ Sub ·) where
   trans L M N hlm hmn := by
