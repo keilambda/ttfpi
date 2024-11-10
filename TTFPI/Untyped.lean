@@ -183,6 +183,10 @@ theorem rename_size_eq : (M.rename x y).size = M.size := by
     · rw [size]
     next h => rw [not_or] at h; split <;> (next hx => simp [hx, hQ])
 
+example : (lam "x" ↦ "x").rename "x" "y" = lam "y" ↦ "y" := rfl
+example : (lam "x" ↦ "y").rename "x" "y" = lam "x" ↦ "y" := rfl
+example : (lam "x", "y" ↦ "x").rename "x" "y" = lam "x", "y" ↦ "x" := rfl
+
 @[aesop safe [constructors]]
 inductive Renaming : Λ → Λ → Prop where
 | rename (x y : Name) (M : Λ) (hfv : y ∉ (FV M)) (hnb : ¬ M.hasBindingVar y) : Renaming (abs x M) (abs y (rename M x y))
