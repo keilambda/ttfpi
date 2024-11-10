@@ -8,6 +8,8 @@ import Mathlib.Order.Heyting.Basic
 # Simply Typed λ-calculus: λ→
 -/
 
+namespace SimplyTyped
+
 -- 2.2.1: The set Typ of all simple types
 inductive Typ where
 | var (α : Name)
@@ -359,3 +361,5 @@ def reduceβ : Term → Term
 | .var x => .var x
 | .app M N => .app (reduceβ M) (reduceβ N)
 | .abs x σ M => .abs x σ (reduceβ M)
+
+end SimplyTyped

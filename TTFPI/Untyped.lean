@@ -15,6 +15,8 @@ style that is compatible with these tactics. This is because we want to keep the
 as possible, for educational purposes.
 -/
 
+namespace Untyped
+
 -- 1.3.2: The set Λ of all λ-terms
 inductive Λ where
 | var (name : Name)
@@ -558,5 +560,5 @@ def false := lam "x", "y" ↦ "y"
 def not := lam "z" ↦ "z" ∙ false ∙ true
 
 end Combinators
-
 end Λ
+end Untyped
