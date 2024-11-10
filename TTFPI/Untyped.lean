@@ -506,7 +506,7 @@ theorem fixpoint {x : Name} (L : Λ) (h : x ∉ L.FV) : ∃ M : Λ, app L M =β 
   simp [subst, subst_noop h] at this
   exact ⟨M, .betaInv this⟩
 
-def toNat : Λ → Option Nat
+def toNat? : Λ → Option Nat
 | abs _ (abs _ t) =>
   let rec loop (e : Λ) : Option Nat :=
     match e with
@@ -519,9 +519,13 @@ def toNat : Λ → Option Nat
   loop t
 | _ => none
 
-def toBool : Λ → Option Bool
+def toNat! (M : Λ) : Nat := M.toNat?.getD default
+
+def toBool? : Λ → Option Bool
 | abs x (abs y (var z)) => if x = z then some true else if y = z then some false else none
 | _ => none
+
+def toBool! (M : Λ) : Bool := M.toBool?.getD default
 
 namespace Combinators
 
