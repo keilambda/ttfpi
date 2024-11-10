@@ -309,8 +309,14 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     · by_cases hyz : y = z
       · simp [hxz, hyz, subst, subst_noop hxm]
       · simp [hxz, hyz, subst]
-  | app P Q hP hQ => sorry
-  | abs z Q hQ => sorry
+  | app P Q hP hQ => simp [subst, hP, hQ]
+  | abs z Q hQ =>
+    simp [subst, hQ]
+    by_cases hxz : x = z
+    · by_cases hyz : y = z
+      · subst hxz hyz; contradiction
+      · simp_all [subst]
+    · sorry
 
 -- 1.8.1: One-step β-reduction; →β
 def reduceβ (t : Λ) : Λ :=
