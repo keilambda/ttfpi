@@ -455,6 +455,14 @@ instance : Decidable M.inNormalForm := M.hasDecIsNormalForm
 
 def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
 
+def reduceβAll (t : Λ) : Λ := loop t t.size
+  where loop : Λ → Nat → Λ
+  | t, 0 => t
+  | t, n + 1 =>
+    let r := reduceβ t
+    if r.inNormalForm then r
+    else loop r n
+
 -- 1.9.2: α-equivalence implication
 @[simp]
 theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
