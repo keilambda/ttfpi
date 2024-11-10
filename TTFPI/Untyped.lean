@@ -505,6 +505,19 @@ theorem fixpoint {x : Name} (L : Λ) (h : x ∉ L.FV) : ∃ M : Λ, app L M =β 
   simp [subst, subst_noop h] at this
   exact ⟨M, .betaInv this⟩
 
+def toNat : Λ → Option Nat
+| abs _ (abs _ t) =>
+  let rec loop (e : Λ) : Option Nat :=
+    match e with
+    | var _ => some 0
+    | app (var _) e' =>
+        match loop e' with
+        | some n => some (n + 1)
+        | none => none
+    | _ => none
+  loop t
+| _ => none
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" ∙ "x") ∙ (lam "x" ↦ "x" ∙ "x")
