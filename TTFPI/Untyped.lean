@@ -519,6 +519,10 @@ def toNat : Λ → Option Nat
   loop t
 | _ => none
 
+def toBool : Λ → Option Bool
+| abs x (abs y (var z)) => if x = z then some true else if y = z then some false else none
+| _ => none
+
 namespace Combinators
 
 def Ω := (lam "x" ↦ "x" ∙ "x") ∙ (lam "x" ↦ "x" ∙ "x")
