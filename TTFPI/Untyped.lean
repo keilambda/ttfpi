@@ -246,53 +246,53 @@ def gensymNotIn (fv : Finset Name) : StateM Nat Name := do
     y ← gensym
   return y
 
-def subst (t : Λ) (x : Name) (N : Λ) : StateM Nat Λ :=
+def substGensym (t : Λ) (x : Name) (N : Λ) : StateM Nat Λ :=
   match t with
   | var y => pure $ if x = y then N else t
-  | app P Q => app <$> P.subst x N <*> Q.subst x N
+  | app P Q => app <$> P.substGensym x N <*> Q.substGensym x N
   | abs y P =>
     if x = y then
       pure t
     else if y ∈ N.FV then do
       let z ← gensymNotIn N.FV
-      abs z <$> ((P.rename y z).subst x N)
+      abs z <$> ((P.rename y z).substGensym x N)
     else
-      abs y <$> (P.subst x N)
+      abs y <$> (P.substGensym x N)
 termination_by t.size
 decreasing_by all_goals simp_wf <;> simp_arith
 
-def subst' (t : Λ) (x : Name) (N : Λ) : Λ := t.subst x N |>.run' 0
+def substGensym' (t : Λ) (x : Name) (N : Λ) : Λ := t.substGensym x N |>.run' 0
 
-def substUnsafe (t : Λ) (x : Name) (N : Λ) : Λ :=
+def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
   match t with
   | var y => if x = y then N else t
-  | app P Q => app (P.substUnsafe x N) (Q.substUnsafe x N)
-  | abs y P => if x = y then t else abs y (P.substUnsafe x N)
+  | app P Q => app (P.subst x N) (Q.subst x N)
+  | abs y P => if x = y ∨ y ∈ N.FV then t else abs y (P.subst x N)
 
 syntax term "[" term ":=" term ("," term)? "]" : term
 macro_rules
-| `($M[$x := $N]) => `(substUnsafe $M $x $N)
+| `($M[$x := $N]) => `(subst $M $x $N)
 
-theorem substUnsafe_noop (h : x ∉ M.FV) : M.substUnsafe x N = M := by
+theorem subst_noop (h : x ∉ M.FV) : M.subst x N = M := by
   induction M with
   | var y =>
-    rw [substUnsafe]
+    rw [subst]
     rw [FV, Finset.mem_singleton] at h
     exact if_neg h
   | app P Q ihP ihQ =>
     rw [FV, Finset.mem_union, not_or] at h
-    rw [substUnsafe, app.injEq]
+    rw [subst, app.injEq]
     exact ⟨ihP h.left, ihQ h.right⟩
   | abs y P ihP =>
     rw [FV] at h
-    rw [substUnsafe]
+    rw [subst]
     if hxy : x = y then
-      exact if_pos hxy
+      simp [hxy]
     else
       rw [Finset.mem_sdiff, Finset.mem_singleton] at h
       simp [hxy] at h
       simp [hxy]
-      exact ihP h
+      exact (fun _ => ihP h)
 
 -- 1.6.5
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
@@ -302,10 +302,10 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     · simp [hxz]
       by_cases hyz : y = z
       · subst hxz hyz; contradiction
-      · simp [hyz, substUnsafe]
+      · simp [hyz, subst]
     · by_cases hyz : y = z
-      · simp [hxz, hyz, substUnsafe, substUnsafe_noop hxm]
-      · simp [hxz, hyz, substUnsafe]
+      · simp [hxz, hyz, subst, subst_noop hxm]
+      · simp [hxz, hyz, subst]
   | app P Q hP hQ => sorry
   | abs z Q hQ => sorry
 
@@ -477,8 +477,8 @@ def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
 theorem fixpoint {x : Name} (L : Λ) (h : x ∉ L.FV) : ∃ M : Λ, app L M =β M := by
   let U := lam x ↦ L ∙ (x ∙ x)
   let M := U ∙ U
-  have : M →β (L ∙ (x ∙ x)).substUnsafe x U := Beta.redex ..
-  simp [substUnsafe, substUnsafe_noop h] at this
+  have : M →β (L ∙ (x ∙ x)).subst x U := Beta.redex ..
+  simp [subst, subst_noop h] at this
   exact ⟨M, .betaInv this⟩
 
 namespace Combinators
