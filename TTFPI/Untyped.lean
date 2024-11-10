@@ -132,9 +132,9 @@ def FV : Λ → Finset Name
 | abs x M => FV M \ {x}
 
 -- 1.4.3: Closed λ-term; combinator; Λ⁰
-def Closed (M : Λ) : Prop := M.FV.Nonempty
+def Closed (M : Λ) : Prop := M.FV = ∅
 
-instance : Decidable M.Closed := inferInstanceAs (Decidable M.FV.Nonempty)
+instance : Decidable M.Closed := inferInstanceAs (Decidable (M.FV = ∅))
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
