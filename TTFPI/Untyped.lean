@@ -319,11 +319,12 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     · sorry
 
 -- 1.7.1: modulo α-equivalence
-lemma modulo_alpha_eq_app (hmp : M =α P) (hnq : N =α Q) : M ∙ P =α N ∙ Q := sorry
+-- NOTE: take a look at errata
+lemma modulo_alpha_eq_app (hmn : M =α N) (hpq : P =α Q) : M ∙ P =α N ∙ Q := sorry
 
 lemma modulo_alpha_eq_abs (h : M =α N) : abs x M =α abs x N := sorry
 
-lemma modulo_alpha_eq_subst (hmp : M =α P) (hnq : N =α Q) : M[x := P] =α N[x := Q] := sorry
+lemma modulo_alpha_eq_subst (hmn : M =α N) (hpq : P =α Q) : M[x := P] =α N[x := Q] := sorry
 
 -- 1.8.1: One-step β-reduction; →β
 def reduceβ (t : Λ) : Λ :=
