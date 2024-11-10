@@ -13,7 +13,3 @@ require batteries from git "https://github.com/leanprover-community/batteries" @
 require aesop from git "https://github.com/leanprover-community/aesop" @ "v4.13.0"
 require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.13.0"
 require calcify from git "https://github.com/nomeata/lean-calcify"
-
-@[default_target]
-lean_exe «ttfpi» where
-  root := `Main
