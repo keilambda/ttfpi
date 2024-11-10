@@ -138,24 +138,6 @@ instance : Decidable M.Closed := inferInstanceAs (Decidable (M.FV = ∅))
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
-def rename (t : Λ) (x y : Name) : Λ :=
-  match t with
-  | var x' => if x' = x then var y else t
-  | app M N => app (M.rename x y) (N.rename x y)
-  | abs x' M => if x = x' then t else abs x' (M.rename x y)
-
-@[simp]
-theorem rename_size_eq : (M.rename x y).size = M.size := by
-  induction M with
-  | var _ => rw [rename, size]; split <;> rw [size]
-  | app P Q hP hQ => rw [rename, size, hP, hQ, size]
-  | abs _ Q hQ =>
-    rw [rename, size]
-    split
-    · rw [size]
-    · rw [size, hQ]
-
-@[simp]
 def hasBindingVar (t : Λ) (x : Name) : Prop :=
   match t with
   | var _ => False
@@ -179,6 +161,27 @@ protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingV
         | isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨h, hQ⟩)
 
 instance : Decidable (M.hasBindingVar x) := M.hasDecHasBindingVar x
+
+@[simp]
+def rename (t : Λ) (x y : Name) : Λ :=
+  match t with
+  | var x' => if x' = x then var y else t
+  | app M N => app (M.rename x y) (N.rename x y)
+  | abs x' M =>
+    if M.hasBindingVar y ∨ y ∈ M.FV then t
+    else if x' = x then abs y (M.rename x y)
+    else abs x' (M.rename x y)
+
+@[simp]
+theorem rename_size_eq : (M.rename x y).size = M.size := by
+  induction M with
+  | var _ => rw [rename, size]; split <;> rw [size]
+  | app P Q hP hQ => rw [rename, size, hP, hQ, size]
+  | abs _ Q hQ =>
+    rw [rename, size]
+    split
+    · rw [size]
+    next h => rw [not_or] at h; split <;> (next hx => simp [hx, hQ])
 
 @[aesop safe [constructors]]
 inductive Renaming : Λ → Λ → Prop where
