@@ -237,6 +237,9 @@ instance : IsTrans Λ (· =α ·) := ⟨@AlphaEq.trans⟩
 
 instance : Equivalence AlphaEq := ⟨AlphaEq.refl, AlphaEq.symm, AlphaEq.trans⟩
 
+-- 1.5.4: α-variant
+abbrev AlphaVariant := AlphaEq
+
 -- 1.6.1: Substitution
 def gensym : StateM Nat Name := getModify Nat.succ <&> toString
 
