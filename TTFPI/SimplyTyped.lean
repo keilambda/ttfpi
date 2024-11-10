@@ -352,3 +352,10 @@ theorem substitution {Γ Δ : Context} {M N : Term} {x : Name} {σ τ : Typ}
   (hN : Γ ⊢ N : σ)
   : (Γ ∪ Δ) ⊢ M[x := N] : τ := by
   sorry
+
+-- 2.11.2: One-step β-reduction
+def reduceβ : Term → Term
+| .app (.abs x _ M) N => M[x := N]
+| .var x => .var x
+| .app M N => .app (reduceβ M) (reduceβ N)
+| .abs x σ M => .abs x σ (reduceβ M)
