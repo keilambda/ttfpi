@@ -362,4 +362,92 @@ def reduceβ : Term → Term
 | .app M N => .app (reduceβ M) (reduceβ N)
 | .abs x σ M => .abs x σ (reduceβ M)
 
+inductive Beta : Term → Term → Prop where
+| redex {x : Name} {σ : Typ} (M N : Term) : Beta (.app (.abs x σ M) N) (M[x := N])
+| compatAppLeft {L M N : Term} : Beta M N → Beta (.app M L) (.app N L)
+| compatAppRight {L M N : Term} : Beta M N → Beta (.app L M) (.app L N)
+| compatAbs {x : Name} {σ : Typ} {M N : Term} : Beta M N → Beta (.abs x σ M) (.abs x σ N)
+
+infixl:50 " →β " => Beta
+macro_rules | `($M →β $N) => `(binrel% Beta $M $N)
+
+infixl:50 " ←β " => fun M N => Beta N M
+macro_rules | `($M ←β $N) => `(binrel% Beta $N $M)
+
+@[simp]
+theorem beta_redex {x : Name} {σ : Typ} {M N : Term} : Beta (.app (.abs x σ M) N) (M[x := N]) := Beta.redex M N
+
+@[simp]
+theorem beta_compat_app_left {L M N : Term} (h : M →β N) : .app M L →β .app N L := Beta.compatAppLeft h
+
+@[simp]
+theorem beta_compat_app_right {L M N : Term} (h : M →β N) : .app L M →β .app L N := Beta.compatAppRight h
+
+@[simp]
+theorem beta_compat_abs {x : Name} {σ : Typ} {M N : Term} (h : M →β N) : .abs x σ M →β .abs x σ N := Beta.compatAbs h
+
+-- 1.8.3: β-reduction (zero-or-more-step); ↠β
+abbrev BetaStar := Star Beta
+
+infixl:50 " ↠β " => BetaStar
+macro_rules | `($M ↠β $N) => `(binrel% BetaStar $M $N)
+
+infixl:50 " ↞β " => fun M N => BetaStar N M
+macro_rules | `($M ↞β $N) => `(binrel% BetaStar $N $M)
+
+-- 1.8.4: extension of →β, reflexivity and transitivity
+theorem BetaStar.extension {M N : Term} : M →β N → M ↠β N := by
+  intro h
+  exact Star.step h (Star.zero N)
+
+instance {M N : Term} : Coe (M →β N) (M ↠β N) := ⟨BetaStar.extension⟩
+
+-- 1.8.5: β-conversion; β-equality; =β
+@[aesop safe [constructors]]
+inductive BetaEq : Term → Term → Prop where
+| beta {M N : Term} : Beta M N → BetaEq M N
+| betaInv {M N : Term} : Beta N M → BetaEq M N
+| refl (M : Term) : BetaEq M M
+| symm {M N : Term} : BetaEq M N → BetaEq N M
+| trans {L M N : Term} : BetaEq L M → BetaEq M N → BetaEq L N
+
+infix:50 " =β " => BetaEq
+macro_rules | `($M =β $N) => `(binrel% BetaEq $M $N)
+
+@[simp]
+theorem beta_eq_beta {M N : Term} (h : M →β N) : M =β N := BetaEq.beta h
+
+@[simp]
+theorem beta_eq_beta_inv {M N : Term} (h : M ←β N) : M =β N := BetaEq.betaInv h
+
+@[refl]
+theorem beta_eq_refl (M : Term) : M =β M := BetaEq.refl M
+
+@[symm]
+theorem beta_eq_symm {M N : Term} (h : M =β N) : N =β M := BetaEq.symm h
+
+@[trans]
+theorem beta_eq_trans {L M N : Term} (hlm : L =β M) (hmn : M =β N) : L =β N := BetaEq.trans hlm hmn
+
+theorem eq_imp_beta_eq {M N : Term} (h : M = N) : M =β N := by rw [h]
+
+-- 1.8.6: extension of ↠β, reflexivity, symmetry and transitivity
+theorem BetaEq.extension {M N : Term} : M ↠β N → M =β N := by
+  intro h
+  induction h with
+  | zero => rfl
+  | step hlm _ IH => exact trans (beta hlm) IH
+
+theorem BetaEq.extensionInv {M N : Term} : M ↞β N → M =β N := by
+  intro h
+  induction h with
+  | zero => rfl
+  | step hlm _ IH => exact trans IH (betaInv hlm)
+
+instance : IsRefl Term (· =β ·) := ⟨BetaEq.refl⟩
+instance : IsSymm Term (· =β ·) := ⟨@BetaEq.symm⟩
+instance : IsTrans Term (· =β ·) := ⟨@BetaEq.trans⟩
+
+instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
+
 end SimplyTyped
