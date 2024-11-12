@@ -20,7 +20,7 @@ namespace Typ
 
 protected def toString : Typ → String
 | var α => α
-| arrow σ τ => "(" ++ σ.toString ++ " → " ++ τ.toString ++ ")"
+| arrow σ τ => s!"{σ.toString} → {τ.toString}"
 
 instance : ToString Typ := ⟨Typ.toString⟩
 
