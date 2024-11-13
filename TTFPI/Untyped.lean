@@ -216,6 +216,9 @@ infix:50 " =α " => AlphaEq
 macro_rules | `($x =α $y) => `(binrel% AlphaEq $x $y)
 
 @[simp]
+theorem alpha_eq_rename : Renaming M N → AlphaEq M N := AlphaEq.rename
+
+@[simp]
 theorem alpha_eq_compat_app_left (h : M =α N) : app M L =α app N L := AlphaEq.compatAppLeft h
 
 @[simp]
