@@ -448,4 +448,12 @@ instance : IsTrans Term (· =β ·) := ⟨@BetaEq.trans⟩
 
 instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
 
+-- 2.11.4: CR Corollary
+theorem church_rosser_corollary {M N : Term} (h : M =β N) : ∃ L : Term, M ↠β L ∧ N ↠β L :=
+  sorry
+
+-- 2.11.5: Subject reduction
+theorem subject_reduction {Γ : Context} {L L' : Term} {ρ : Typ} (hj : Γ ⊢ L : ρ) (hb : L ↠β L') : Γ ⊢ L' : ρ :=
+  sorry
+
 end SimplyTyped
