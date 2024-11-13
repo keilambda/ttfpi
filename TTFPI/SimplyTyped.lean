@@ -2,6 +2,7 @@ import TTFPI.Basic
 
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Image
+import Mathlib.Logic.Relation
 import Mathlib.Order.Heyting.Basic
 
 /-
@@ -386,21 +387,18 @@ theorem beta_compat_app_right {L M N : Term} (h : M →β N) : .app L M →β .a
 @[simp]
 theorem beta_compat_abs {x : Name} {σ : Typ} {M N : Term} (h : M →β N) : .abs x σ M →β .abs x σ N := Beta.compatAbs h
 
--- 1.8.3: β-reduction (zero-or-more-step); ↠β
-abbrev BetaStar := Star Beta
+open Relation (ReflTransGen)
+abbrev BetaChain := ReflTransGen Beta
 
-infixl:50 " ↠β " => BetaStar
-macro_rules | `($M ↠β $N) => `(binrel% BetaStar $M $N)
+infixl:50 " ↠β " => BetaChain
+macro_rules | `($M ↠β $N) => `(binrel% BetaChain $M $N)
 
-infixl:50 " ↞β " => fun M N => BetaStar N M
-macro_rules | `($M ↞β $N) => `(binrel% BetaStar $N $M)
+infixl:50 " ↞β " => fun M N => BetaChain N M
+macro_rules | `($M ↞β $N) => `(binrel% BetaChain $N $M)
 
--- 1.8.4: extension of →β, reflexivity and transitivity
-theorem BetaStar.extension {M N : Term} : M →β N → M ↠β N := by
-  intro h
-  exact Star.step h (Star.zero N)
+theorem BetaChain.extension {M N : Term} : M →β N → M ↠β N := ReflTransGen.single
 
-instance {M N : Term} : Coe (M →β N) (M ↠β N) := ⟨BetaStar.extension⟩
+instance {M N : Term} : Coe (M →β N) (M ↠β N) := ⟨BetaChain.extension⟩
 
 -- 1.8.5: β-conversion; β-equality; =β
 @[aesop safe [constructors]]
@@ -435,14 +433,14 @@ theorem eq_imp_beta_eq {M N : Term} (h : M = N) : M =β N := by rw [h]
 theorem BetaEq.extension {M N : Term} : M ↠β N → M =β N := by
   intro h
   induction h with
-  | zero => rfl
-  | step hlm _ IH => exact trans (beta hlm) IH
+  | refl => rfl
+  | tail _ hbc IH => exact trans IH (beta hbc)
 
 theorem BetaEq.extensionInv {M N : Term} : M ↞β N → M =β N := by
   intro h
   induction h with
-  | zero => rfl
-  | step hlm _ IH => exact trans IH (betaInv hlm)
+  | refl => rfl
+  | tail _ hbc IH => exact trans (betaInv hbc) IH
 
 instance : IsRefl Term (· =β ·) := ⟨BetaEq.refl⟩
 instance : IsSymm Term (· =β ·) := ⟨@BetaEq.symm⟩

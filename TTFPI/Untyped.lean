@@ -4,6 +4,7 @@ import Aesop
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Multiset.Basic
 import Mathlib.Data.Multiset.Sort
+import Mathlib.Logic.Relation
 import Mathlib.Order.Defs
 import Mathlib.Order.RelClasses
 
@@ -25,6 +26,7 @@ inductive Λ where
 deriving Repr, Ord, DecidableEq
 
 namespace Λ
+open Relation (ReflTransGen)
 
 variable {L M N P Q R : Λ}
 variable {x y z u v w : Name}
@@ -361,20 +363,18 @@ theorem beta_compat_app_right {L M N : Λ} (h : M →β N) : app L M →β app L
 theorem beta_compat_abs {x : Name} {M N : Λ} (h : M →β N) : abs x M →β abs x N := Beta.compatAbs h
 
 -- 1.8.3: β-reduction (zero-or-more-step); ↠β
-abbrev BetaStar := Star Beta
+abbrev BetaChain := ReflTransGen Beta
 
-infixl:50 " ↠β " => BetaStar
-macro_rules | `($M ↠β $N) => `(binrel% BetaStar $M $N)
+infixl:50 " ↠β " => BetaChain
+macro_rules | `($M ↠β $N) => `(binrel% BetaChain $M $N)
 
-infixl:50 " ↞β " => fun M N => BetaStar N M
-macro_rules | `($M ↞β $N) => `(binrel% BetaStar $N $M)
+infixl:50 " ↞β " => fun M N => BetaChain N M
+macro_rules | `($M ↞β $N) => `(binrel% BetaChain $N $M)
 
 -- 1.8.4: extension of →β, reflexivity and transitivity
-theorem BetaStar.extension : M →β N → M ↠β N := by
-  intro h
-  exact Star.step h (Star.zero N)
+theorem BetaChain.extension : M →β N → M ↠β N := ReflTransGen.single
 
-instance : Coe (M →β N) (M ↠β N) := ⟨BetaStar.extension⟩
+instance : Coe (M →β N) (M ↠β N) := ⟨BetaChain.extension⟩
 
 -- 1.8.5: β-conversion; β-equality; =β
 @[aesop safe [constructors]]
@@ -409,14 +409,14 @@ theorem eq_imp_beta_eq (h : M = N) : M =β N := by rw [h]
 theorem BetaEq.extension : M ↠β N → M =β N := by
   intro h
   induction h with
-  | zero => rfl
-  | step hlm _ IH => exact trans (beta hlm) IH
+  | refl => rfl
+  | tail _ hbc IH => exact trans IH (beta hbc)
 
 theorem BetaEq.extensionInv : M ↞β N → M =β N := by
   intro h
   induction h with
-  | zero => rfl
-  | step hlm _ IH => exact trans IH (betaInv hlm)
+  | refl => rfl
+  | tail _ hbc IH => exact trans (betaInv hbc) IH
 
 instance : IsRefl Λ (· =β ·) := ⟨BetaEq.refl⟩
 instance : IsSymm Λ (· =β ·) := ⟨@BetaEq.symm⟩
@@ -482,19 +482,22 @@ theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
     exact congrArg (abs x) (IH h)
 
 @[simp]
-theorem nf_beta_star_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := by
+theorem nf_beta_chain_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := by
   induction hmn with
-  | zero => rfl
-  | step hlm hmn IH => cases hmn <;> (have := nf_beta_imp_eq h hlm; subst this; exact IH h)
+  | refl => rfl
+  | tail hlm hmn IH =>
+    cases hlm
+    · exact nf_beta_imp_eq h hmn
+    · subst IH; exact nf_beta_imp_eq h hmn
 
-theorem nf_beta_star_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
-  eq_imp_alpha_eq (nf_beta_star_imp_eq h hmn)
+theorem nf_beta_chain_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
+  eq_imp_alpha_eq (nf_beta_chain_imp_eq h hmn)
 
 -- 1.9.5: Reduction path
-abbrev FiniteReductionPath := Star Beta
+abbrev FiniteReductionPath := ReflTransGen Beta
 
-instance : IsRefl Λ FiniteReductionPath := ⟨@Star.refl _ _⟩
-instance : IsTrans Λ FiniteReductionPath := ⟨@Star.trans _ _⟩
+instance : IsRefl Λ FiniteReductionPath := ⟨@ReflTransGen.refl _ _⟩
+instance : IsTrans Λ FiniteReductionPath := ⟨@ReflTransGen.trans _ _⟩
 
 def isWeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M ↠β N
 
