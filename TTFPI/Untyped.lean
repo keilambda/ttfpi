@@ -502,9 +502,23 @@ abbrev FiniteReductionPath := ReflTransGen Beta
 instance : IsRefl Λ FiniteReductionPath := ⟨@ReflTransGen.refl _ _⟩
 instance : IsTrans Λ FiniteReductionPath := ⟨@ReflTransGen.trans _ _⟩
 
+-- 1.9.6: Weak normalization, strong normalization
 def isWeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M ↠β N
 
 def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
+
+-- 1.9.8: Church-Rosser; CR; Confluence
+theorem church_rosser {L M N : Λ} (hmn : L ↠β M) (hmp : L ↠β N) : ∃ P : Λ, M ↠β P ∧ N ↠β P :=
+  Relation.church_rosser (fun hl hm hn hlhm hlhn => sorry) hmn hmp
+
+-- 1.9.9: Church-Rosser Corollary
+theorem church_rosser_corollary {L M N : Λ} (hmn : M =β N) : ∃ L : Λ, M ↠β L ∧ N ↠β L := by
+  induction hmn with
+  | beta hmn => sorry
+  | betaInv _ => sorry
+  | refl hmn => exact ⟨hmn, by rw [and_self]⟩
+  | symm hmn ih => obtain ⟨_, h⟩ := ih; exact ⟨_, h.symm⟩
+  | trans _ => sorry
 
 -- 1.10.1: Fixpoint
 theorem fixpoint {x : Name} (L : Λ) (h : x ∉ L.FV) : ∃ M : Λ, app L M =β M := by
