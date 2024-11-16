@@ -142,29 +142,29 @@ instance : Decidable M.Closed := inferInstanceAs (Decidable (M.FV = ∅))
 
 -- 1.5.1: Renaming; Mˣ ʸ; =ₐ
 @[simp]
-def hasBindingVar (t : Λ) (x : Name) : Prop :=
+def HasBindingVar (t : Λ) (x : Name) : Prop :=
   match t with
   | var _ => False
-  | app M N => M.hasBindingVar x ∨ N.hasBindingVar x
-  | abs y N => x = y ∨ N.hasBindingVar x
+  | app M N => M.HasBindingVar x ∨ N.HasBindingVar x
+  | abs y N => x = y ∨ N.HasBindingVar x
 
-protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.hasBindingVar x) :=
+protected def hasDecHasBindingVar (M : Λ) (x : Name) : Decidable (M.HasBindingVar x) :=
   match M with
-  | var _ => isFalse (by rw [hasBindingVar, not_false_eq_true]; trivial)
+  | var _ => isFalse (by rw [HasBindingVar, not_false_eq_true]; trivial)
   | app P Q =>
     match P.hasDecHasBindingVar x, Q.hasDecHasBindingVar x with
     | isTrue hP, _ => isTrue (by exact Or.inl hP)
     | _, isTrue hQ => isTrue (by exact Or.inr hQ)
-    | isFalse hP, isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨hP, hQ⟩)
+    | isFalse hP, isFalse hQ => isFalse (by rw [HasBindingVar, not_or]; exact ⟨hP, hQ⟩)
   | abs y Q =>
     if h : x = y
-      then isTrue (by rw [hasBindingVar]; exact Or.inl h)
+      then isTrue (by rw [HasBindingVar]; exact Or.inl h)
       else
         match Q.hasDecHasBindingVar x with
         | isTrue hQ => isTrue (by exact Or.inr hQ)
-        | isFalse hQ => isFalse (by rw [hasBindingVar, not_or]; exact ⟨h, hQ⟩)
+        | isFalse hQ => isFalse (by rw [HasBindingVar, not_or]; exact ⟨h, hQ⟩)
 
-instance : Decidable (M.hasBindingVar x) := M.hasDecHasBindingVar x
+instance : Decidable (M.HasBindingVar x) := M.hasDecHasBindingVar x
 
 @[simp]
 def rename (t : Λ) (x y : Name) : Λ :=
@@ -172,7 +172,7 @@ def rename (t : Λ) (x y : Name) : Λ :=
   | var x' => if x' = x then var y else t
   | app M N => app (M.rename x y) (N.rename x y)
   | abs x' M =>
-    if M.hasBindingVar y ∨ y ∈ M.FV then t
+    if M.HasBindingVar y ∨ y ∈ M.FV then t
     else if x' = x then abs y (M.rename x y)
     else abs x' (M.rename x y)
 
@@ -193,10 +193,10 @@ example : (lam "x", "y" ↦ "x").rename "x" "y" = lam "x", "y" ↦ "x" := rfl
 
 @[aesop safe [constructors]]
 inductive Renaming : Λ → Λ → Prop where
-| rename (x y : Name) (M : Λ) (hfv : y ∉ (FV M)) (hnb : ¬ M.hasBindingVar y) : Renaming (abs x M) (abs y (rename M x y))
+| rename (x y : Name) (M : Λ) (hfv : y ∉ (FV M)) (hnb : ¬ M.HasBindingVar y) : Renaming (abs x M) (abs y (rename M x y))
 
 @[simp]
-theorem renaming_rename {x y : Name} {M : Λ} {hfv : y ∉ (FV M)} {hnb : ¬ M.hasBindingVar y} : Renaming (abs x M) (abs y (rename M x y)) :=
+theorem renaming_rename {x y : Name} {M : Λ} {hfv : y ∉ (FV M)} {hnb : ¬ M.HasBindingVar y} : Renaming (abs x M) (abs y (rename M x y)) :=
   Renaming.rename x y M hfv hnb
 
 -- 1.5.2: α-conversion or α-equivalence; =α
@@ -467,7 +467,7 @@ protected def hasDecInNormalForm (M : Λ) : Decidable M.InNormalForm :=
 
 instance : Decidable M.InNormalForm := M.hasDecInNormalForm
 
-def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.InNormalForm ∧ M =β N
+def HasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.InNormalForm ∧ M =β N
 
 def reduceβAll (t : Λ) : Λ := loop t t.size
   where loop : Λ → Nat → Λ
