@@ -428,53 +428,53 @@ instance : IsTrans Λ (· =β ·) := ⟨@BetaEq.trans⟩
 instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
 
 -- 1.9.1: β-normal form; β-nf; β-normalizing
-def isRedex : Λ → Prop
+def Redex : Λ → Prop
 | app (abs _ _) _ => True
 | _ => False
 
-instance : Decidable M.isRedex :=
+instance : Decidable M.Redex :=
   match M with
-  | var _ => isFalse (by dsimp [isRedex]; trivial)
-  | app (var _) _ => isFalse (by dsimp [isRedex]; trivial)
-  | app (app _ _) _ => isFalse (by dsimp [isRedex]; trivial)
-  | app (abs _ _) _ => isTrue (by rw [isRedex]; trivial)
-  | abs _ _ => isFalse (by dsimp [isRedex]; trivial)
+  | var _ => isFalse (by dsimp [Redex]; trivial)
+  | app (var _) _ => isFalse (by dsimp [Redex]; trivial)
+  | app (app _ _) _ => isFalse (by dsimp [Redex]; trivial)
+  | app (abs _ _) _ => isTrue (by rw [Redex]; trivial)
+  | abs _ _ => isFalse (by dsimp [Redex]; trivial)
 
-def inNormalForm : Λ → Prop
+def InNormalForm : Λ → Prop
 | var _ => True
-| app M N => ¬ isRedex (app M N) ∧ inNormalForm M ∧ inNormalForm N
-| abs _ M => inNormalForm M
+| app M N => ¬ Redex (app M N) ∧ InNormalForm M ∧ InNormalForm N
+| abs _ M => InNormalForm M
 
-protected def hasDecIsNormalForm (M : Λ) : Decidable M.inNormalForm :=
+protected def hasDecInNormalForm (M : Λ) : Decidable M.InNormalForm :=
   match M with
-  | var _ => isTrue (by rw [inNormalForm]; trivial)
+  | var _ => isTrue (by rw [InNormalForm]; trivial)
   | app M N =>
-    if h : isRedex (app M N)
-      then isFalse (by rw [inNormalForm, not_and]; intro nh; contradiction)
-      else match M.hasDecIsNormalForm, N.hasDecIsNormalForm with
-        | isFalse hM, _ => isFalse (by rw [inNormalForm, not_and, not_and]; intro _ nh; contradiction)
-        | _, isFalse hN => isFalse (by rw [inNormalForm, not_and, not_and]; intro _ _ nh; contradiction)
-        | isTrue hM, isTrue hN => isTrue (by rw [inNormalForm]; exact ⟨h, hM, hN⟩)
-  | abs _ M => M.hasDecIsNormalForm
+    if h : Redex (app M N)
+      then isFalse (by rw [InNormalForm, not_and]; intro nh; contradiction)
+      else match M.hasDecInNormalForm, N.hasDecInNormalForm with
+        | isFalse hM, _ => isFalse (by rw [InNormalForm, not_and, not_and]; intro _ nh; contradiction)
+        | _, isFalse hN => isFalse (by rw [InNormalForm, not_and, not_and]; intro _ _ nh; contradiction)
+        | isTrue hM, isTrue hN => isTrue (by rw [InNormalForm]; exact ⟨h, hM, hN⟩)
+  | abs _ M => M.hasDecInNormalForm
 
-instance : Decidable M.inNormalForm := M.hasDecIsNormalForm
+instance : Decidable M.InNormalForm := M.hasDecInNormalForm
 
-def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M =β N
+def hasNormalForm (M : Λ) : Prop := ∃ N : Λ, N.InNormalForm ∧ M =β N
 
 def reduceβAll (t : Λ) : Λ := loop t t.size
   where loop : Λ → Nat → Λ
   | t, 0 => t
   | t, n + 1 =>
     let r := reduceβ t
-    if r.inNormalForm then r
+    if r.InNormalForm then r
     else loop r n
 
 -- 1.9.2: α-equivalence implication
 @[simp]
-theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
+theorem nf_beta_imp_eq (h : M.InNormalForm) (hmn : M →β N) : M = N := by
   induction hmn with
   | redex M N =>
-    rw [inNormalForm, isRedex] at h
+    rw [InNormalForm, Redex] at h
     rw [not_true_eq_false, false_and] at h
     contradiction
   | @compatAppLeft L M N _ IH =>
@@ -485,7 +485,7 @@ theorem nf_beta_imp_eq (h : M.inNormalForm) (hmn : M →β N) : M = N := by
     exact congrArg (abs x) (IH h)
 
 @[simp]
-theorem nf_beta_chain_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := by
+theorem nf_beta_chain_imp_eq (h : M.InNormalForm) (hmn : M ↠β N) : M = N := by
   induction hmn with
   | refl => rfl
   | tail hlm hmn IH =>
@@ -493,7 +493,7 @@ theorem nf_beta_chain_imp_eq (h : M.inNormalForm) (hmn : M ↠β N) : M = N := b
     · exact nf_beta_imp_eq h hmn
     · subst IH; exact nf_beta_imp_eq h hmn
 
-theorem nf_beta_chain_imp_alpha_eq (h : M.inNormalForm) (hmn : M ↠β N) : M =α N :=
+theorem nf_beta_chain_imp_alpha_eq (h : M.InNormalForm) (hmn : M ↠β N) : M =α N :=
   eq_imp_alpha_eq (nf_beta_chain_imp_eq h hmn)
 
 -- 1.9.5: Reduction path
@@ -503,9 +503,9 @@ instance : IsRefl Λ FiniteReductionPath := ⟨@ReflTransGen.refl _ _⟩
 instance : IsTrans Λ FiniteReductionPath := ⟨@ReflTransGen.trans _ _⟩
 
 -- 1.9.6: Weak normalization, strong normalization
-def isWeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.inNormalForm ∧ M ↠β N
+def WeaklyNormalizing (M : Λ) : Prop := ∃ N : Λ, N.InNormalForm ∧ M ↠β N
 
-def isStronglyNormalizing (M : Λ) : Prop := Acc Beta M
+def StronglyNormalizing (M : Λ) : Prop := Acc Beta M
 
 -- 1.9.8: Church-Rosser; CR; Confluence
 theorem church_rosser {L M N : Λ} (hmn : L ↠β M) (hmp : L ↠β N) : ∃ P : Λ, M ↠β P ∧ N ↠β P :=
