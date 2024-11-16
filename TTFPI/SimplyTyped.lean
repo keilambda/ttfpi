@@ -392,7 +392,6 @@ theorem BetaChain.extension {M N : Term} : M →β N → M ↠β N := ReflTransG
 
 instance {M N : Term} : Coe (M →β N) (M ↠β N) := ⟨BetaChain.extension⟩
 
--- 1.8.5: β-conversion; β-equality; =β
 @[aesop safe [constructors]]
 inductive BetaEq : Term → Term → Prop where
 | beta {M N : Term} : Beta M N → BetaEq M N
@@ -421,7 +420,6 @@ theorem beta_eq_trans {L M N : Term} (hlm : L =β M) (hmn : M =β N) : L =β N :
 
 theorem eq_imp_beta_eq {M N : Term} (h : M = N) : M =β N := by rw [h]
 
--- 1.8.6: extension of ↠β, reflexivity, symmetry and transitivity
 theorem BetaEq.extension {M N : Term} : M ↠β N → M =β N := by
   intro h
   induction h with
@@ -439,6 +437,10 @@ instance : IsSymm Term (· =β ·) := ⟨@BetaEq.symm⟩
 instance : IsTrans Term (· =β ·) := ⟨@BetaEq.trans⟩
 
 instance : Equivalence BetaEq := ⟨BetaEq.refl, BetaEq.symm, BetaEq.trans⟩
+
+-- 2.11.3: Church-Rosser Theorem; CR; Confluence
+theorem church_rosser {L M N : Term} (hmn : L ↠β M) (hmp : L ↠β N) : ∃ P : Term, M ↠β P ∧ N ↠β P :=
+  Relation.church_rosser (fun hl hm hn hlhm hlhn => sorry) hmn hmp
 
 -- 2.11.4: CR Corollary
 theorem church_rosser_corollary {M N : Term} (h : M =β N) : ∃ L : Term, M ↠β L ∧ N ↠β L :=
