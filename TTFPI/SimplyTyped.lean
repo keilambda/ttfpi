@@ -450,4 +450,9 @@ theorem church_rosser_corollary {M N : Term} (h : M =β N) : ∃ L : Term, M ↠
 theorem subject_reduction {Γ : Context} {L L' : Term} {ρ : Typ} (hj : Γ ⊢ L : ρ) (hb : L ↠β L') : Γ ⊢ L' : ρ :=
   sorry
 
+-- 2.11.6: Strong normalization of legal terms
+def StronglyNormalizing (M : Term) : Prop := Acc Beta M
+
+theorem Legal_imp_StronglyNormalizing {M : Term} : Legal M → StronglyNormalizing M := sorry
+
 end SimplyTyped
