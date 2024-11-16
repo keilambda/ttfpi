@@ -141,13 +141,8 @@ theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ 
 theorem thinning {Γ Δ : Context} {M : Term} {σ : Typ} (h : Γ ⊆ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
   intro J
   induction J with
-  | var h' =>
-    apply Judgement.var
-    exact h h'
-  | app jP jQ ihP ihQ =>
-    apply Judgement.app
-    · exact ihP h
-    · exact ihQ h
+  | var h' => exact Judgement.var (h h')
+  | app jP jQ ihP ihQ => exact Judgement.app (ihP h) (ihQ h)
   | abs Δ' ih =>
     apply Judgement.abs
     sorry
@@ -177,10 +172,7 @@ theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ 
   | var h' =>
     apply Judgement.var
     sorry
-  | app jP jQ ihP ihQ =>
-    apply Judgement.app
-    · exact ihP h
-    · exact ihQ h
+  | app jP jQ ihP ihQ => exact Judgement.app (ihP h) (ihQ h)
   | abs Θ ih =>
     apply Judgement.abs
     sorry
@@ -190,19 +182,19 @@ theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ 
 theorem generation_var {Γ : Context} {x : Name} {σ : Typ} : (Γ ⊢ x : σ) ↔ (x, σ) ∈ Γ := by
   apply Iff.intro
   · intro h; cases h; assumption
-  · intro h; apply Judgement.var; assumption
+  · apply Judgement.var
 
 @[simp]
 theorem generation_app {Γ : Context} {M N : Term} {τ : Typ} : (Γ ⊢ M ∙ N : τ) ↔ (∃ σ : Typ, (Γ ⊢ M : σ ⇒ τ) ∧ (Γ ⊢ N : σ)) := by
   apply Iff.intro
   · intro h; cases h; case mp.app σ hn hm => exact ⟨σ, ⟨hm, hn⟩⟩
-  · intro h; cases h; case mpr.intro σ h => apply Judgement.app; exact h.left; exact h.right
+  · intro h; cases h; case mpr.intro σ h => exact Judgement.app h.left h.right
 
 @[simp]
 theorem generation_abs {Γ : Context} {x : Name} {M : Term} {σ ρ : Typ} : (Γ ⊢ Term.abs x σ M : ρ) ↔ (∃ τ : Typ, ((insert (x, σ) Γ) ⊢ M : τ) ∧ ρ = (σ ⇒ τ)) := by
   apply Iff.intro
   · intro h; cases h; case mp.abs τ h => exact ⟨τ, ⟨h, rfl⟩⟩
-  · intro h; cases h; case mpr.intro τ h => rw [h.right]; apply Judgement.abs; exact h.left
+  · intro h; cases h; case mpr.intro τ h => rw [h.right]; exact Judgement.abs h.left
 
 -- 2.10.8: Subterm Lemma
 theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
@@ -214,7 +206,7 @@ theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
     | @var Δ x α h =>
       simp at hN
       subst hN
-      exact ⟨Δ, α, by apply Judgement.var; exact h⟩
+      exact ⟨Δ, α, Judgement.var h⟩
     | @app Δ P Q α β jP jQ ihP ihQ =>
       simp [Legal]
       simp at hN
@@ -227,7 +219,7 @@ theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
       simp [Legal]
       simp at hN
       cases hN with
-      | inl h => subst h; exact ⟨Δ, (α ⇒ β), by apply Judgement.abs; exact Δ'⟩
+      | inl h => subst h; exact ⟨Δ, (α ⇒ β), Judgement.abs Δ'⟩
       | inr h => simp at ih; exact ih h
 
 -- 2.10.9: Uniqueness of Types
@@ -268,7 +260,7 @@ def hasDecTypeable (M : Term) : Decidable (Typeable M) :=
         let τ : Typ := "τ"
         let Γ : Context := {(x, σ ⇒ τ)}
         match Q with
-        | .var y => exact isTrue ⟨τ, insert (y, σ) Γ, by apply Judgement.app; aesop; aesop⟩
+        | .var y => exact isTrue ⟨τ, insert (y, σ) Γ, Judgement.app (by aesop) (by aesop)⟩
         | .app R S => sorry
         | .abs y ρ N => sorry
       | .app R S => sorry
