@@ -327,9 +327,17 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
 
 -- 1.7.1: modulo α-equivalence
 -- NOTE: take a look at errata
-lemma modulo_alpha_eq_app (hmn : M =α N) (hpq : P =α Q) : M ∙ P =α N ∙ Q := sorry
+lemma modulo_alpha_eq_app (hmn : M =α N) (hpq : P =α Q) : M ∙ P =α N ∙ Q := by
+  induction hmn with
+  | @rename M N hrmn => sorry
+  | @compatAppLeft L M N hmn ih => sorry
+  | @compatAppRight L M N hmn ih => sorry
+  | @compatAbs z M N hmn ih => sorry
+  | @refl M => exact AlphaEq.compatAppRight hpq
+  | @symm M N hmn ih => sorry
+  | @trans L M N hlm hmn ihlm ihmn => sorry
 
-lemma modulo_alpha_eq_abs (h : M =α N) : abs x M =α abs x N := sorry
+lemma modulo_alpha_eq_abs (h : M =α N) : abs x M =α abs x N := AlphaEq.compatAbs h
 
 lemma modulo_alpha_eq_subst (hmn : M =α N) (hpq : P =α Q) : M[x := P] =α N[x := Q] := sorry
 
