@@ -79,4 +79,43 @@ infixl:100 " ∙ₜ " => tapp
 notation "Λ" binder ":" kind "," body => tabs binder kind body
 
 end Term
+
+inductive Declaration where
+| type (decl : Name × Typ)
+| kind (decl : Name × Kind)
+deriving Repr, DecidableEq
+
+instance : Coe (Name × Typ) Declaration := ⟨.type⟩
+instance : Coe (Name × Kind) Declaration := ⟨.kind⟩
+
+abbrev Context := Finset Declaration
+
+@[aesop safe [constructors]]
+inductive Judgement : Context → Term → Typ → Prop where
+| var {Γ : Context} {x : Name} {σ : Typ} :
+    ↑(x, σ) ∈ Γ →
+    Judgement Γ x σ
+| app {Γ : Context} {M N : Term} {σ τ : Typ} :
+    Judgement Γ M (σ ⇒ τ) →
+    Judgement Γ N σ →
+    Judgement Γ (M ∙ N) τ
+| abs {Γ : Context} {x : Name} {M : Term} {σ τ : Typ} :
+    Judgement (insert ↑(x, σ) Γ) M τ →
+    Judgement Γ (Term.abs x σ M) (σ ⇒ τ)
+-- 3.3.1: Second order abstraction rule
+| tabs {Γ : Context} {α : Name} {M : Term} {A : Typ} :
+    Judgement (insert ↑(α, ∗) Γ) M A →
+    Judgement Γ (Λ α : ∗, M) (Π α : ∗, A)
+-- 3.3.2: Second order application rule
+| tapp {Γ : Context} {α : Name} {M : Term} {A B : Typ} :
+    Judgement Γ M (Π α : ∗, A) →
+    -- Judgement Γ B ∗ →
+    Judgement Γ (M ∙ₜ B) (A[α := B])
+
+notation Γ " ⊢ " M " : " σ => Judgement Γ M σ
+
+def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M : σ
+
+notation "⊢ " M " : " σ => Statement M σ
+
 end SecondOrder
