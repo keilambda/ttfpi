@@ -1,5 +1,7 @@
 import TTFPI.Basic
 
+import Mathlib.Data.Finset.Basic
+
 namespace SecondOrder
 
 inductive Kind where
@@ -30,6 +32,21 @@ instance : Coe Name Typ := ⟨var⟩
 infixr:20 " ⇒ " => arrow
 
 notation "Π" binder ":" kind "," body => pi binder kind body
+
+def fv : Typ → Finset Name
+| var x => {x}
+| arrow M N => M.fv ∪ N.fv
+| pi x _ M => M.fv \ {x}
+
+def subst (A : Typ) (α : Name) (B : Typ) : Typ :=
+  match A with
+  | var α' => if α = α' then B else A
+  | arrow σ τ => arrow (σ.subst α B) (τ.subst α B)
+  | pi α' k body => if α = α' ∨ α' ∈ B.fv then A else pi α' k (body.subst α B)
+
+syntax term "[" term ":=" term ("," term)? "]" : term
+macro_rules
+| `($M[$x := $N]) => `(subst $M $x $N)
 
 end Typ
 
