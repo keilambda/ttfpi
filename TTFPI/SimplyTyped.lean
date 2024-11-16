@@ -83,14 +83,14 @@ abbrev Context := Finset Declaration
 -- 2.4.5: Derivation rules for λ→
 @[aesop safe [constructors]]
 inductive Judgement : Context → Term → Typ → Prop where
-| var (Γ : Context) (x : Name) (σ : Typ) :
+| var {Γ : Context} {x : Name} {σ : Typ} :
     (x, σ) ∈ Γ →
     Judgement Γ x σ
-| app (Γ : Context) (M N : Term) (σ τ : Typ) :
+| app {Γ : Context} {M N : Term} {σ τ : Typ} :
     Judgement Γ M (σ ⇒ τ) →
     Judgement Γ N σ →
     Judgement Γ (M ∙ N) τ
-| abs (Γ : Context) (x : Name) (M : Term) (σ τ : Typ) :
+| abs {Γ : Context} {x : Name} {M : Term} {σ τ : Typ} :
     Judgement (insert (x, σ) Γ) M τ →
     Judgement Γ (Term.abs x σ M) (σ ⇒ τ)
 
@@ -123,15 +123,15 @@ theorem Finset.diff_subset_iff {α : Type*} [DecidableEq α] {s t u : Finset α}
 
 theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ L : σ) : L.FV ⊆ dom Γ := by
   induction J with
-  | var Δ x α h =>
+  | @var _ _ α h =>
     simp [Term.FV, dom]
     exact ⟨α, h⟩
-  | app Δ M N α β jM jN ihM ihN =>
+  | app jM jN ihM ihN =>
     simp [Term.FV]
     apply Finset.union_subset
     · exact ihM
     · exact ihN
-  | abs Δ x M α β Δ' ihM =>
+  | abs Δ' ihM =>
     simp [Term.FV]
     simp [dom_insert_eq_insert_dom] at ihM
     exact Finset.diff_subset_iff.mpr ihM
@@ -141,31 +141,31 @@ theorem context_free_variables {Γ : Context} {L : Term} {σ : Typ} (J : Γ ⊢ 
 theorem thinning {Γ Δ : Context} {M : Term} {σ : Typ} (h : Γ ⊆ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
   intro J
   induction J with
-  | var Δ' x α h' =>
+  | var h' =>
     apply Judgement.var
     exact h h'
-  | app Δ' P Q α β jP jQ ihP ihQ =>
+  | app jP jQ ihP ihQ =>
     apply Judgement.app
     · exact ihP h
     · exact ihQ h
-  | abs Δ' x P α β Δ' ih =>
+  | abs Δ' ih =>
     apply Judgement.abs
     sorry
 
 @[simp]
 theorem condensing {Γ : Context} {M : Term} {σ : Typ} (J : Γ ⊢ M : σ) : (Γ ↾ M.FV) ⊢ M : σ := by
   induction J with
-  | var Δ x α h =>
+  | var h =>
     apply Judgement.var
     simp [Term.FV]
     sorry
-  | app Δ P Q α β jP jQ ihP ihQ =>
+  | app jP jQ ihP ihQ =>
     apply Judgement.app
     simp [Term.FV]
     · sorry
     · sorry
     · sorry
-  | abs Δ x P α β Δ' ih =>
+  | abs Δ' ih =>
     apply Judgement.abs
     simp [Term.FV]
     sorry
@@ -174,14 +174,14 @@ theorem condensing {Γ : Context} {M : Term} {σ : Typ} (J : Γ ⊢ M : σ) : (�
 theorem permutation {Γ Δ : Context} {M : Term} {σ : Typ} (h : Permutation Γ Δ) : (Γ ⊢ M : σ) → (Δ ⊢ M : σ) := by
   intro J
   induction J with
-  | var Δ' x α h' =>
+  | var h' =>
     apply Judgement.var
     sorry
-  | app Δ' P Q α β jP jQ ihP ihQ =>
+  | app jP jQ ihP ihQ =>
     apply Judgement.app
     · exact ihP h
     · exact ihQ h
-  | abs Δ' x L ρ τ Θ ih =>
+  | abs Θ ih =>
     apply Judgement.abs
     sorry
 
@@ -211,19 +211,19 @@ theorem subterm {M : Term} (h : Legal M) : ∀ N, N ⊆ M → Legal N := by
   | intro Γ h =>
     obtain ⟨ρ, J⟩ := h
     induction J with
-    | var Δ x α h =>
+    | @var Δ x α h =>
       simp at hN
       subst hN
       exact ⟨Δ, α, by apply Judgement.var; exact h⟩
-    | app Δ P Q α β jP jQ ihP ihQ =>
+    | @app Δ P Q α β jP jQ ihP ihQ =>
       simp [Legal]
       simp at hN
       cases hN with
-      | inl h => subst h; exact ⟨Δ, β, Judgement.app _ _ _ _ _ jP jQ⟩
+      | inl h => subst h; exact ⟨Δ, β, Judgement.app jP jQ⟩
       | inr h => cases h with
         | inl h => simp at ihP; exact ihP h
         | inr h => simp at ihQ; exact ihQ h
-    | abs Δ x P α β Δ' ih =>
+    | @abs Δ x P α β Δ' ih =>
       simp [Legal]
       simp at hN
       cases hN with
@@ -294,14 +294,14 @@ def hasDecTypeChecking (Γ : Context) (M : Term) (σ : Typ) : Decidable (TypeChe
   match M with
   | .var x => by
     if h : (x, σ) ∈ Γ then
-      exact isTrue (Judgement.var Γ x σ h)
+      exact isTrue (Judgement.var h)
     else
       dsimp
       rw [generation_var]
       exact isFalse (fun nh => by contradiction)
   | .app P Q => by
     match hasDecTypeChecking Γ P (σ ⇒ σ), hasDecTypeChecking Γ Q σ with
-    | isTrue jP, isTrue jQ => exact isTrue (Judgement.app Γ P Q σ σ jP jQ)
+    | isTrue jP, isTrue jQ => exact isTrue (Judgement.app jP jQ)
     | isFalse njP, isTrue jQ =>
       dsimp at *
       simp [generation_app] at *
