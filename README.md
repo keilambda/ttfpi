@@ -5,8 +5,9 @@ This is a formalization of the book "Type Theory and Formal Proof: An Introducti
 ## Chapters
 
 1. [Untyped Lambda Calculus](./TTFPI/Untyped.lean)
-2. [Simply Typed Lambda Calculus](./TTFPI/SimplyTyped.lean)
-3. [Second-order Typed Lambda Calculus](./TTFPI/SecondOrder.lean)
+2. [Simply Typed Lambda Calculus](./TTFPI/SimplyTyped.lean) ($\lambda ^ \to$)
+3. [Second-order Typed Lambda Calculus](./TTFPI/SecondOrder.lean) ($\lambda 2$)
+4. [Types Dependent on Types](./TTFPI/WeakOmega.lean) ($\lambda \underline{\omega}$)
 
 > [!CAUTION]
 > Be sure to review the book's [errata][errata] (page 51).
