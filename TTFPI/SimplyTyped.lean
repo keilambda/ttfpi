@@ -308,19 +308,24 @@ def hasDecTypeChecking (Γ : Context) (M : Term) (σ : Typ) : Decidable (TypeChe
       simp [generation_app] at *
       exact isFalse (fun nh => by
         obtain ⟨ty, tyP, tyQ⟩ := nh
-        sorry
+        have := uniqueness_of_types jP tyP
+        simp [Typ.arrow.injEq] at this
+        subst this
+        contradiction
       )
     | isFalse njP, isFalse njQ =>
       dsimp at *
       simp [generation_app] at *
       sorry
   | .abs x ρ P => by
-    rw [TypeChecking]
+    dsimp
     let τ : Typ := "τ"
     match hasDecTypeChecking (insert (x, ρ) Γ) P τ with
     | isTrue jP =>
       simp at *
-      exact isTrue ⟨τ, jP, sorry⟩
+      have := Judgement.abs jP
+      have := generation_abs.mp this
+      sorry
     | isFalse njP => sorry
 
 def hasDecTermFinding (Γ : Context) (σ : Typ) : Decidable (TermFinding Γ σ) := sorry
