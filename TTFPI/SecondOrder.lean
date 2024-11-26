@@ -22,8 +22,8 @@ namespace Typ
 
 protected def toString : Typ → String
 | var α => α
-| arrow dom codom => s!"{dom.toString} → {codom.toString}"
-| pi binder kind body => s!"Π {binder} : {kind}. {body.toString}"
+| arrow dom codom => s!"({dom.toString} → {codom.toString})"
+| pi binder kind body => s!"(Π {binder} : {kind}. {body.toString})"
 
 instance : ToString Typ := ⟨Typ.toString⟩
 
@@ -64,7 +64,7 @@ namespace Term
 protected def toString : Term → String
 | var α => α
 | app fn arg => s!"({fn.toString} {arg.toString})"
-| tapp fn arg => s!"({fn.toString} [{arg.toString}])"
+| tapp fn arg => s!"({fn.toString} {arg.toString})"
 | abs param type body => s!"(λ{param} : {type}. {body.toString})"
 | tabs binder kind body => s!"(Λ{binder} : {kind}. {body.toString})"
 
