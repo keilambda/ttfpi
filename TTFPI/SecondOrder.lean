@@ -121,28 +121,28 @@ inductive HasKind : Context → Typ → Kind → Prop where
     HasKind Γ x k
 
 @[aesop safe [constructors]]
-inductive Judgement : Context → Term → Typ → Prop where
+inductive HasType : Context → Term → Typ → Prop where
 | var {Γ : Context} {x : Name} {σ : Typ} :
     ↑(x, σ) ∈ Γ →
-    Judgement Γ x σ
+    HasType Γ x σ
 | app {Γ : Context} {M N : Term} {σ τ : Typ} :
-    Judgement Γ M (σ ⇒ τ) →
-    Judgement Γ N σ →
-    Judgement Γ (M ∙ N) τ
+    HasType Γ M (σ ⇒ τ) →
+    HasType Γ N σ →
+    HasType Γ (M ∙ N) τ
 | abs {Γ : Context} {x : Name} {M : Term} {σ τ : Typ} :
-    Judgement (insert ↑(x, σ) Γ) M τ →
-    Judgement Γ (Term.abs x σ M) (σ ⇒ τ)
+    HasType (insert ↑(x, σ) Γ) M τ →
+    HasType Γ (Term.abs x σ M) (σ ⇒ τ)
 -- 3.3.1: Second order abstraction rule
 | tabs {Γ : Context} {α : Name} {M : Term} {A : Typ} :
-    Judgement (insert ↑(α, ∗) Γ) M A →
-    Judgement Γ (Λ α : ∗ ↦ M) (Π α : ∗ ↦ A)
+    HasType (insert ↑(α, ∗) Γ) M A →
+    HasType Γ (Λ α : ∗ ↦ M) (Π α : ∗ ↦ A)
 -- 3.3.2: Second order application rule
 | tapp {Γ : Context} {α : Name} {M : Term} {A B : Typ} :
-    Judgement Γ M (Π α : ∗ ↦ A) →
+    HasType Γ M (Π α : ∗ ↦ A) →
     HasKind Γ B ∗ →
-    Judgement Γ (M ∙ₜ B) (A[α := B])
+    HasType Γ (M ∙ₜ B) (A[α := B])
 
-notation Γ " ⊢ " M " : " σ => Judgement Γ M σ
+notation Γ " ⊢ " M " : " σ => HasType Γ M σ
 notation Γ " ⊢ₖ " σ " : " k => HasKind Γ σ k
 
 def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M : σ
