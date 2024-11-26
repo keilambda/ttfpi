@@ -60,8 +60,8 @@ inductive Term where
 | var (name : Name)
 | app (fn : Term) (arg : Term)
 | tapp (fn : Term) (arg : Typ)
-| abs (param : Name) (type : Typ) (body : Term)
-| tabs (binder : Name) (kind : Kind) (body : Term)
+| abs (param : Name) (type : Typ) (body : Term)    -- (*, *)
+| tabs (binder : Name) (kind : Kind) (body : Term) -- (□, *)
 deriving Repr, DecidableEq
 
 namespace Term
@@ -150,5 +150,16 @@ def KindStatement (σ : Typ) (k : Kind) : Prop := ∃ Γ : Context, Γ ⊢ₖ σ
 
 notation "⊢ " M " : " σ => Statement M σ
 notation "⊢ₖ " σ " : " k => KindStatement σ k
+
+namespace Combinators
+
+def id : Term := Λ "α" : ∗ ↦ ƛ "x" : "α" ↦ "x"
+def D : Term := Λ "α" : ∗ ↦ ƛ "f" : ("α" ⇒ "α"), "x" : "α" ↦ "f" ∙ ("f" ∙ "x")
+def compose : Term :=
+  Λ "α" : ∗, "β" : ∗, "γ" : ∗ ↦
+  ƛ "f" : ("α" ⇒ "β"), "g" : ("β" ⇒ "γ"), "x" : "α" ↦
+  "g" ∙ ("f" ∙ "x")
+
+end Combinators
 
 end SecondOrder
