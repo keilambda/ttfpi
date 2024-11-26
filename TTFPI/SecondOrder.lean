@@ -107,6 +107,19 @@ instance : Coe (Name × Kind) Declaration := ⟨.kind⟩
 
 abbrev Context := Finset Declaration
 
+/-
+**Kind judgment** asserts type of the type.
+
+NOTE:
+Seems unnecessary, because every type in λ2 has a kind `∗`. I guess the author introduced it early on, so that later the
+reader will need to *just* extend the definition with new rules and call it a day.
+-/
+@[aesop safe [constructors]]
+inductive HasKind : Context → Typ → Kind → Prop where
+| var {Γ : Context} {x : Name} {k : Kind} :
+    ↑(x, k) ∈ Γ →
+    HasKind Γ x k
+
 @[aesop safe [constructors]]
 inductive Judgement : Context → Term → Typ → Prop where
 | var {Γ : Context} {x : Name} {σ : Typ} :
@@ -126,13 +139,16 @@ inductive Judgement : Context → Term → Typ → Prop where
 -- 3.3.2: Second order application rule
 | tapp {Γ : Context} {α : Name} {M : Term} {A B : Typ} :
     Judgement Γ M (Π α : ∗ ↦ A) →
-    -- Judgement Γ B ∗ →
+    HasKind Γ B ∗ →
     Judgement Γ (M ∙ₜ B) (A[α := B])
 
 notation Γ " ⊢ " M " : " σ => Judgement Γ M σ
+notation Γ " ⊢ₖ " σ " : " k => HasKind Γ σ k
 
 def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M : σ
+def KindStatement (σ : Typ) (k : Kind) : Prop := ∃ Γ : Context, Γ ⊢ₖ σ : k
 
 notation "⊢ " M " : " σ => Statement M σ
+notation "⊢ₖ " σ " : " k => KindStatement σ k
 
 end SecondOrder
