@@ -31,7 +31,12 @@ instance : Coe Name Typ := ⟨var⟩
 
 infixr:20 " ⇒ " => arrow
 
-notation "Π" binder ":" kind "," body => pi binder kind body
+syntax "Π" (term ":" term),+ "↦" term : term
+macro_rules
+| `(Π $binder : $kind ↦ $M) => `(pi $binder $kind $M)
+| `(Π $binder : $kind, $[$binders : $kinds],* ↦ $M) => do
+  let N ← `(Π $[$binders : $kinds],* ↦ M)
+  `(pi $binder $kind $N)
 
 def FTV : Typ → Finset Name
 | var x => {x}
@@ -76,7 +81,19 @@ infixl:100 " ∙ " => app
 
 infixl:100 " ∙ₜ " => tapp
 
-notation "Λ" binder ":" kind "," body => tabs binder kind body
+syntax "Λ" (term ":" term),+ "↦" term : term
+macro_rules
+| `(Λ $binder : $kind ↦ $M) => `(tabs $binder $kind $M)
+| `(Λ $binder : $kind, $[$binders : $kinds],* ↦ $M) => do
+  let N ← `(Λ $[$binders : $kinds],* ↦ $M)
+  `(tabs $binder $kind $N)
+
+syntax "ƛ" (term ":" term),+ "↦" term : term
+macro_rules
+| `(ƛ $var : $type ↦ $M) => `(abs $var $type $M)
+| `(ƛ $var : $type, $[$vars : $types],* ↦ $M) => do
+  let N ← `(ƛ $[$vars : $types],* ↦ $M)
+  `(abs $var $type $N)
 
 end Term
 
@@ -105,10 +122,10 @@ inductive Judgement : Context → Term → Typ → Prop where
 -- 3.3.1: Second order abstraction rule
 | tabs {Γ : Context} {α : Name} {M : Term} {A : Typ} :
     Judgement (insert ↑(α, ∗) Γ) M A →
-    Judgement Γ (Λ α : ∗, M) (Π α : ∗, A)
+    Judgement Γ (Λ α : ∗ ↦ M) (Π α : ∗ ↦ A)
 -- 3.3.2: Second order application rule
 | tapp {Γ : Context} {α : Name} {M : Term} {A B : Typ} :
-    Judgement Γ M (Π α : ∗, A) →
+    Judgement Γ M (Π α : ∗ ↦ A) →
     -- Judgement Γ B ∗ →
     Judgement Γ (M ∙ₜ B) (A[α := B])
 
