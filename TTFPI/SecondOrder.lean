@@ -131,23 +131,34 @@ inductive HasKind : Context → Typ → Kind → Prop where
 @[aesop safe [constructors]]
 inductive HasType : Context → Term → Typ → Prop where
 | var {Γ : Context} {x : Name} {σ : Typ} :
-    ↑(x, σ) ∈ Γ →
+    ↑(x, σ) ∈ Γ
+    → -----------
     HasType Γ x σ
+
 | app {Γ : Context} {M N : Term} {σ τ : Typ} :
-    HasType Γ M (σ ⇒ τ) →
-    HasType Γ N σ →
+    HasType Γ M (σ ⇒ τ)
+    → -----------------
+    HasType Γ N σ
+    → -----------------
     HasType Γ (M ∙ N) τ
+
 | abs {Γ : Context} {x : Name} {M : Term} {σ τ : Typ} :
-    HasType (insert ↑(x, σ) Γ) M τ →
-    HasType Γ (Term.abs x σ M) (σ ⇒ τ)
+    HasType (insert ↑(x, σ) Γ) M τ
+    → ------------------------------
+    HasType Γ (ƛ x : σ ↦ M) (σ ⇒ τ)
+
 -- 3.3.1: Second order abstraction rule
 | tabs {Γ : Context} {α : Name} {M : Term} {A : Typ} :
-    HasType (insert ↑(α, ∗) Γ) M A →
+    HasType (insert ↑(α, ∗) Γ) M A
+    → ------------------------------------
     HasType Γ (Λ α : ∗ ↦ M) (Π α : ∗ ↦ A)
+
 -- 3.3.2: Second order application rule
 | tapp {Γ : Context} {α : Name} {M : Term} {A B : Typ} :
-    HasType Γ M (Π α : ∗ ↦ A) →
-    HasKind Γ B ∗ →
+    HasType Γ M (Π α : ∗ ↦ A)
+    → -----------------------
+    HasKind Γ B ∗
+    → ----------------------------
     HasType Γ (M ∙ₜ B) (A[α := B])
 
 notation Γ " ⊢ " M " : " σ => HasType Γ M σ
