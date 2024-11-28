@@ -97,6 +97,7 @@ macro_rules
 
 end Term
 
+-- 3.4.3: Declaration
 inductive Declaration where
 | type (decl : Name × Typ)
 | kind (decl : Name × Kind)
@@ -145,6 +146,7 @@ inductive HasType : Context → Term → Typ → Prop where
 notation Γ " ⊢ " M " : " σ => HasType Γ M σ
 notation Γ " ⊢ₖ " σ " : " k => HasKind Γ σ k
 
+-- 3.4.3: Statement
 def Statement (M : Term) (σ : Typ) : Prop := ∃ Γ : Context, Γ ⊢ M : σ
 def KindStatement (σ : Typ) (k : Kind) : Prop := ∃ Γ : Context, Γ ⊢ₖ σ : k
 
