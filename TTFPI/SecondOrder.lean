@@ -117,9 +117,16 @@ reader will need to *just* extend the definition with new rules and call it a da
 -/
 @[aesop safe [constructors]]
 inductive HasKind : Context → Typ → Kind → Prop where
-| var {Γ : Context} {x : Name} {k : Kind} :
-    ↑(x, k) ∈ Γ →
-    HasKind Γ x k
+| var {Γ : Context} {x : Name}
+    ---------------
+    : HasKind Γ x ∗
+
+| arrow {Γ : Context} {σ τ : Typ} :
+    HasKind Γ σ ∗
+    → -----------
+    HasKind Γ τ ∗
+    → -----------------
+    HasKind Γ (σ ⇒ τ) ∗
 
 @[aesop safe [constructors]]
 inductive HasType : Context → Term → Typ → Prop where
