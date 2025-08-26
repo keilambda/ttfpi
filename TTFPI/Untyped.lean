@@ -264,7 +264,7 @@ def substGensym (t : Λ) (x : Name) (N : Λ) : StateM Nat Λ :=
     if x = y then
       pure t
     else if y ∈ N.FV then do
-      let z ← gensymNotIn N.FV
+      let z ← gensymNotIn ({x} ∪ P.FV ∪ N.FV)
       abs z <$> ((P.rename y z).substGensym x N)
     else
       abs y <$> (P.substGensym x N)
@@ -277,7 +277,7 @@ def subst (t : Λ) (x : Name) (N : Λ) : Λ :=
   match t with
   | var y => if x = y then N else t
   | app P Q => app (P.subst x N) (Q.subst x N)
-  | abs y P => if x = y ∨ y ∈ N.FV then t else abs y (P.subst x N)
+  | abs y P => if x = y ∨ y ∈ (P.FV ∪ N.FV) then t else abs y (P.subst x N)
 
 syntax term "[" term ":=" term ("," term)? "]" : term
 macro_rules
@@ -302,7 +302,7 @@ theorem subst_noop (h : x ∉ M.FV) : M.subst x N = M := by
       rw [Finset.mem_sdiff, Finset.mem_singleton] at h
       simp [hxy] at h
       simp [hxy]
-      exact (fun _ => ihP h)
+      exact (fun _ _ => ihP h)
 
 -- 1.6.5
 lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y := L][x := N[y := L]] := by
@@ -323,6 +323,7 @@ lemma subst_sequence (h : x ≠ y) (hxm : x ∉ L.FV) : M[x := N][y := L] = M[y 
     · by_cases hyz : y = z
       · subst hxz hyz; contradiction
       · simp_all [subst]
+        sorry
     · sorry
 
 -- 1.7.1: modulo α-equivalence
